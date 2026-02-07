@@ -1,0 +1,9 @@
+{
+	"nodes":[
+		{"id":"0d327956ad1f16b5","x":-60,"y":-80,"width":120,"height":60,"color":"1","type":"text","text":"쿠버네티스"},
+		{"id":"04019064da3a6233","x":-279,"y":-480,"width":559,"height":333,"type":"file","file":"Kubernetes/단어 카드/파드(Pod).md"}
+	],
+	"edges":[
+		{"id":"f32e53d2a9d797c1","fromNode":"0d327956ad1f16b5","fromSide":"top","toNode":"04019064da3a6233","toSide":"bottom"}
+	]
+}

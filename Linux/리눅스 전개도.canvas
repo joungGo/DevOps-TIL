@@ -1,0 +1,25 @@
+{
+	"nodes":[
+		{"id":"bdeef942c7cf76c1","type":"text","text":"- **프로그램**\n  : 컴퓨터에서 동작하는 관련된 명령어 및 데이터를 하나로 묶은 것\n  (커널도 프로그램의 일종)\n- **프로세스**\n  : 실행되어서 동작 중인 프로그램","x":-540,"y":-280,"width":334,"height":181},
+		{"id":"7256ac4c8b6584d9","type":"file","file":"커널(Kernel).md","x":-540,"y":-60,"width":334,"height":380},
+		{"id":"fce36db2197fbb68","type":"text","text":"프로세스","x":133,"y":-219,"width":105,"height":60,"color":"2"},
+		{"id":"3d1af7ede8e50e5f","type":"text","text":"Linux","x":144,"y":100,"width":83,"height":60,"color":"1"},
+		{"id":"5a58774566ab48c9","type":"text","text":"커널","x":0,"y":100,"width":76,"height":60,"color":"2"},
+		{"id":"864ad3e4966cdc1e","type":"file","file":"시스템 콜.md","x":-540,"y":398,"width":334,"height":400},
+		{"id":"d55ad899400d3f91","type":"file","file":"라이브러리.md","x":-1060,"y":-68,"width":400,"height":388},
+		{"id":"49c652b291a7435a","type":"text","text":"### 예외 이벤트\n\n(책: 4장 페이지 테이블)","x":-498,"y":960,"width":250,"height":76,"color":"3"},
+		{"id":"3bacda0e0a25726f","type":"file","file":"시스템 콜 래퍼 함수.md","x":-1140,"y":398,"width":480,"height":400},
+		{"id":"714ce237b5e6b368","x":-540,"y":-1120,"width":500,"height":317,"color":"5","type":"file","file":"Linux/Question List.md"}
+	],
+	"edges":[
+		{"id":"7bb0265a94f90c6f","fromNode":"fce36db2197fbb68","fromSide":"left","toNode":"bdeef942c7cf76c1","toSide":"right"},
+		{"id":"fab034d176142ab5","fromNode":"3d1af7ede8e50e5f","fromSide":"left","toNode":"5a58774566ab48c9","toSide":"right"},
+		{"id":"87d2788e04582d27","fromNode":"5a58774566ab48c9","fromSide":"left","toNode":"7256ac4c8b6584d9","toSide":"right"},
+		{"id":"7322e008d6683cb2","fromNode":"7256ac4c8b6584d9","fromSide":"bottom","toNode":"864ad3e4966cdc1e","toSide":"top"},
+		{"id":"aced1a9386396bd6","fromNode":"3d1af7ede8e50e5f","fromSide":"top","toNode":"fce36db2197fbb68","toSide":"bottom"},
+		{"id":"853ada25d1ad04a2","fromNode":"7256ac4c8b6584d9","fromSide":"left","toNode":"d55ad899400d3f91","toSide":"right"},
+		{"id":"6bbaa413d762c89e","fromNode":"d55ad899400d3f91","fromSide":"bottom","toNode":"3bacda0e0a25726f","toSide":"top"},
+		{"id":"14a677dab682ce27","fromNode":"864ad3e4966cdc1e","fromSide":"left","toNode":"3bacda0e0a25726f","toSide":"right"},
+		{"id":"c050ca80af82dcfd","fromNode":"864ad3e4966cdc1e","fromSide":"bottom","toNode":"49c652b291a7435a","toSide":"top"}
+	]
+}
