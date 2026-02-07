@@ -12,17 +12,14 @@
             "id": "1bb08d1f90ed13f8",
             "type": "leaf",
             "state": {
-              "type": "canvas",
+              "type": "markdown",
               "state": {
-                "file": "Linux/리눅스 전개도.canvas",
-                "viewState": {
-                  "x": -370.4764729120547,
-                  "y": 182.1927107638311,
-                  "zoom": -0.4034572672316183
-                }
+                "file": "Linux/단어 카드/라이브러리.md",
+                "mode": "source",
+                "source": false
               },
-              "icon": "lucide-layout-dashboard",
-              "title": "리눅스 전개도"
+              "icon": "lucide-file",
+              "title": "라이브러리"
             }
           },
           {
@@ -120,8 +117,7 @@
       }
     ],
     "direction": "horizontal",
-    "width": 425.5,
-    "collapsed": true
+    "width": 425.5
   },
   "right": {
     "id": "683f0c2bf5a40b89",
@@ -226,18 +222,18 @@
       "bases:새 베이스 생성하기": false
     }
   },
-  "active": "1bb08d1f90ed13f8",
+  "active": "bcc936f7182fe221",
   "lastOpenFiles": [
-    "Linux/Question List.md",
     "Linux/리눅스 전개도.canvas",
-    "시스템 콜 래퍼 함수.md",
-    "라이브러리.md",
+    "Linux/Question List.md",
+    "Linux/단어 카드/시스템 콜 래퍼 함수.md",
+    "Linux/단어 카드/라이브러리.md",
     "CS/Network/네트워크 전개도.canvas",
     "CS/Network/네트워크 전개도.canvas",
-    "커널(Kernel).md",
-    "시스템 콜.md",
+    "Linux/단어 카드/커널(Kernel).md",
+    "Linux/단어 카드/시스템 콜.md",
     "Linux/word collection;.md",
-    "메모장.md",
+    "Linux/단어 카드/메모장.md",
     "Linux/단어 카드",
     "Kubernetes/단어 카드",
     "Kubernetes/단어 카드/파드(Pod).md",
