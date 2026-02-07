@@ -1,1 +1,5 @@
-./obsidian
+# Obsidian 설정 폴더
+.obsidian/
+
+# 개인용 바로가기 모음
+바로가기 모음/
