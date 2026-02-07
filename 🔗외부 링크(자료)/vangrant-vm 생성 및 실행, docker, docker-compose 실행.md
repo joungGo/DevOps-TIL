@@ -1,0 +1,1 @@
+https://github.com/joneconsulting/vagrant/blob/main/install/01_ubuntu_k8s_install_newest.md
