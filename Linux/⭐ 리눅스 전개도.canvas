@@ -1,6 +1,5 @@
 {
 	"nodes":[
-		{"id":"49b34d903a3a515f","type":"file","file":"파일 시스템.md","x":230,"y":3815,"width":400,"height":400},
 		{"id":"39dbe1e31fe96b6c","type":"file","file":"프로세스에 새로운 메모리 할당하기.md","x":-288,"y":2280,"width":400,"height":400},
 		{"id":"9d430a8f17e2959d","type":"file","file":"메모리.md","x":-287,"y":1239,"width":400,"height":400},
 		{"id":"53dde17743bb9d4f","type":"file","file":"Linux/📚이론/단어 카드/오버헤드.md","x":-562,"y":-1340,"width":400,"height":400},
@@ -43,17 +42,22 @@
 		{"id":"c2e36c1ffbba61d1","type":"file","file":"프로세스 vs 스레드.md","x":1920,"y":-258,"width":400,"height":914},
 		{"id":"cd2a142f4dc85130","type":"file","file":"멀티 프로세스 vs  멀티 스레드.md","x":2400,"y":-41,"width":400,"height":481},
 		{"id":"bbf5d5f5eff39664","type":"file","file":"스레드 구현 방법.md","x":2880,"y":79,"width":400,"height":241,"color":"3"},
-		{"id":"0f2a7b016ebfe47d","type":"text","text":"디바이스\n(저장 장치)","x":128,"y":984,"width":119,"height":60,"color":"2"},
 		{"id":"78024969b39a79ff","type":"file","file":"디바이스 드라이버.md","x":495,"y":2280,"width":400,"height":400},
 		{"id":"8474183d4029f4ed","type":"file","file":"디바이스 파일.md","x":495,"y":2800,"width":400,"height":400},
 		{"id":"a94a3fe4fabdd527","type":"file","file":"메모리 맵 입출력(MIMO).md","x":1060,"y":2280,"width":400,"height":400},
 		{"id":"005509d3da20499b","type":"file","file":"폴링.md","x":1060,"y":2760,"width":400,"height":400},
 		{"id":"b48cdba4437c645d","type":"file","file":"인터럽트.md","x":1060,"y":3240,"width":400,"height":400},
-		{"id":"265be0fd1dea2fc4","type":"file","file":"메모리 맵 파일.md","x":230,"y":4360,"width":400,"height":400},
-		{"id":"092a08dd0b618fd7","x":720,"y":3985,"width":187,"height":60,"color":"2","type":"text","text":"일반적인 파일 시스템"},
-		{"id":"c67217da23d5e563","x":1060,"y":3760,"width":429,"height":336,"type":"file","file":"쿼터.md"},
-		{"id":"2b210bd3cbf09daf","x":1060,"y":4140,"width":400,"height":400,"type":"file","file":"파일의 정합성 유지.md"},
-		{"id":"4b2fcf723eb67f26","type":"file","file":"⭐프로세스부터 저장장치까지 처리 흐름 종합 정리.md","x":1640,"y":2565,"width":480,"height":780,"color":"6"}
+		{"id":"4b2fcf723eb67f26","type":"file","file":"⭐프로세스부터 저장장치까지 처리 흐름 종합 정리.md","x":1640,"y":2565,"width":480,"height":780,"color":"6"},
+		{"id":"a4eab5501c65f7d1","type":"text","text":"파일 시스템","x":103,"y":1029,"width":124,"height":60,"color":"2"},
+		{"id":"0f2a7b016ebfe47d","type":"text","text":"디바이스\n(저장 장치)","x":280,"y":1029,"width":119,"height":55,"color":"2"},
+		{"id":"49b34d903a3a515f","type":"file","file":"파일 시스템.md","x":230,"y":4095,"width":400,"height":400},
+		{"id":"092a08dd0b618fd7","type":"text","text":"일반적인 파일 시스템","x":720,"y":4265,"width":187,"height":60,"color":"2"},
+		{"id":"265be0fd1dea2fc4","type":"file","file":"메모리 맵 파일.md","x":230,"y":4640,"width":400,"height":400},
+		{"id":"c67217da23d5e563","type":"file","file":"쿼터.md","x":1060,"y":4040,"width":429,"height":336},
+		{"id":"2b210bd3cbf09daf","type":"file","file":"파일의 정합성 유지.md","x":1060,"y":4420,"width":400,"height":400},
+		{"id":"a146f0692d581a8e","type":"file","file":"Btrfs - 스냅샷.md","x":1740,"y":4419,"width":400,"height":400},
+		{"id":"fda3e5b831ae9b07","type":"text","text":"Btrfs","x":1560,"y":4590,"width":78,"height":60,"color":"2"},
+		{"id":"6d28a71fab9b4f52","x":1740,"y":4880,"width":400,"height":400,"type":"file","file":"Btrfs - 데이터 손상 감지와 복구.md"}
 	],
 	"edges":[
 		{"id":"7bb0265a94f90c6f","fromNode":"fce36db2197fbb68","fromSide":"left","toNode":"bdeef942c7cf76c1","toSide":"right"},
@@ -104,10 +108,14 @@
 		{"id":"c0f5e8a2ae3021fb","fromNode":"78024969b39a79ff","fromSide":"right","toNode":"005509d3da20499b","toSide":"left"},
 		{"id":"48cb93590ffc536d","fromNode":"78024969b39a79ff","fromSide":"right","toNode":"b48cdba4437c645d","toSide":"left"},
 		{"id":"b3b6b5e4d7229522","fromNode":"005509d3da20499b","fromSide":"bottom","toNode":"b48cdba4437c645d","toSide":"top","fromEnd":"arrow"},
-		{"id":"9f96ac3f6019197d","fromNode":"0f2a7b016ebfe47d","fromSide":"bottom","toNode":"49b34d903a3a515f","toSide":"top"},
 		{"id":"354beaf3db22ef22","fromNode":"49b34d903a3a515f","fromSide":"bottom","toNode":"265be0fd1dea2fc4","toSide":"top"},
 		{"id":"adffb689d7e03f03","fromNode":"49b34d903a3a515f","fromSide":"right","toNode":"092a08dd0b618fd7","toSide":"left"},
 		{"id":"d0bb599454b88ad0","fromNode":"092a08dd0b618fd7","fromSide":"right","toNode":"c67217da23d5e563","toSide":"left"},
-		{"id":"10d4c3fa949e34f8","fromNode":"092a08dd0b618fd7","fromSide":"right","toNode":"2b210bd3cbf09daf","toSide":"left"}
+		{"id":"10d4c3fa949e34f8","fromNode":"092a08dd0b618fd7","fromSide":"right","toNode":"2b210bd3cbf09daf","toSide":"left"},
+		{"id":"fa863cc70c007e8e","fromNode":"3d1af7ede8e50e5f","fromSide":"bottom","toNode":"a4eab5501c65f7d1","toSide":"top"},
+		{"id":"c7ddaec1f78a80a6","fromNode":"a4eab5501c65f7d1","fromSide":"bottom","toNode":"49b34d903a3a515f","toSide":"top"},
+		{"id":"79782ebd5d761260","fromNode":"2b210bd3cbf09daf","fromSide":"right","toNode":"fda3e5b831ae9b07","toSide":"left"},
+		{"id":"6e0836b24ed4f813","fromNode":"fda3e5b831ae9b07","fromSide":"right","toNode":"a146f0692d581a8e","toSide":"left"},
+		{"id":"1d76f825d5a579f9","fromNode":"fda3e5b831ae9b07","fromSide":"right","toNode":"6d28a71fab9b4f52","toSide":"left"}
 	]
 }
