@@ -1,5 +1,6 @@
 {
 	"nodes":[
+		{"id":"49b34d903a3a515f","type":"file","file":"파일 시스템.md","x":230,"y":3815,"width":400,"height":400},
 		{"id":"39dbe1e31fe96b6c","type":"file","file":"프로세스에 새로운 메모리 할당하기.md","x":-288,"y":2280,"width":400,"height":400},
 		{"id":"9d430a8f17e2959d","type":"file","file":"메모리.md","x":-287,"y":1239,"width":400,"height":400},
 		{"id":"53dde17743bb9d4f","type":"file","file":"Linux/📚이론/단어 카드/오버헤드.md","x":-562,"y":-1340,"width":400,"height":400},
@@ -36,7 +37,23 @@
 		{"id":"2894b292333662f3","type":"file","file":"페이지 테이블 계층화.md","x":-800,"y":2280,"width":400,"height":400},
 		{"id":"0301d84da83f59a8","type":"file","file":"Huge Page.md","x":-800,"y":2800,"width":400,"height":400},
 		{"id":"290af38e705cb64b","type":"file","file":"THP(with. Huge Page).md","x":-287,"y":2800,"width":456,"height":545,"color":"3"},
-		{"id":"35114c855b8ad0a1","type":"text","text":"결론부터 말하면 **맞다.**  \nHuge Page를 만들기 위해서는 **가상 주소 공간과 물리 주소 공간 모두에서**, 설정하려는 페이지 크기(예: 2MB)만큼 **연속된 주소 공간이 필요하다.**\n\n다만 두 연속성의 의미와 “누가 보장하느냐”는 다르다.\n\n---\n\n## 1. 가상 주소 연속성\n\n- Huge Page는 **하나의 가상 페이지**로 취급된다.\n    \n- 따라서 가상 주소 공간에서도\n    \n    - 2MB Huge Page라면 2MB\n        \n    - 1GB Huge Page라면 1GB  \n        만큼 **연속된 가상 주소 영역(VMA)** 이 존재해야 한다.\n        \n\n이 조건은 비교적 충족하기 쉽다.\n\n- 가상 주소 공간은 넉넉하고\n    \n- 커널이 연속되게 배치할 수 있기 때문이다.\n    \n\n---\n\n## 2. 물리 주소 연속성\n\n- Huge Page의 핵심 제약 조건이다.\n    \n- Huge Page는 **하나의 페이지 테이블 엔트리**로\n    \n    - “이 가상 2MB는 물리 메모리의 어디부터 시작한다”만 기록한다.\n        \n- MMU는\n    \n    - `물리 시작 주소 + offset`  \n        방식으로 주소를 계산한다.\n        \n\n따라서:\n\n- 물리 메모리에서도\n    \n- 동일한 크기의 **연속된 물리 프레임**이 반드시 필요하다.\n    \n\n이 조건은 시스템 상태에 따라 충족되지 않을 수 있다.\n\n- 장시간 동작\n    \n- 잦은 메모리 할당/해제  \n    → 물리 메모리 단편화\n    \n\n---\n\n## 3. 두 조건이 동시에 필요한 이유\n\n|구분|필요 여부|이유|\n|---|---|---|\n|가상 주소 연속성|필수|Huge Page는 하나의 가상 페이지 단위|\n|물리 주소 연속성|필수|MMU가 offset 기반으로 주소 계산|\n\n하나라도 만족하지 못하면:\n\n- Huge Page 생성 불가\n    \n- 일반 4KB 페이지로 처리\n    \n\n---\n\n## 4. 한 문장 요약\n\nHuge Page는 하나의 페이지로 동작하기 때문에, 가상 주소 공간과 물리 주소 공간 모두에서 설정된 페이지 크기만큼 연속된 주소 공간이 존재해야만 생성할 수 있다.\n\n이 이해가 되면  \nTHP가 “될 때도 있고 안 될 때도 있는 이유”가 완전히 설명된다.","x":-1320,"y":2786,"width":446,"height":429,"color":"3"}
+		{"id":"35114c855b8ad0a1","type":"text","text":"결론부터 말하면 **맞다.**  \nHuge Page를 만들기 위해서는 **가상 주소 공간과 물리 주소 공간 모두에서**, 설정하려는 페이지 크기(예: 2MB)만큼 **연속된 주소 공간이 필요하다.**\n\n다만 두 연속성의 의미와 “누가 보장하느냐”는 다르다.\n\n---\n\n## 1. 가상 주소 연속성\n\n- Huge Page는 **하나의 가상 페이지**로 취급된다.\n    \n- 따라서 가상 주소 공간에서도\n    \n    - 2MB Huge Page라면 2MB\n        \n    - 1GB Huge Page라면 1GB  \n        만큼 **연속된 가상 주소 영역(VMA)** 이 존재해야 한다.\n        \n\n이 조건은 비교적 충족하기 쉽다.\n\n- 가상 주소 공간은 넉넉하고\n    \n- 커널이 연속되게 배치할 수 있기 때문이다.\n    \n\n---\n\n## 2. 물리 주소 연속성\n\n- Huge Page의 핵심 제약 조건이다.\n    \n- Huge Page는 **하나의 페이지 테이블 엔트리**로\n    \n    - “이 가상 2MB는 물리 메모리의 어디부터 시작한다”만 기록한다.\n        \n- MMU는\n    \n    - `물리 시작 주소 + offset`  \n        방식으로 주소를 계산한다.\n        \n\n따라서:\n\n- 물리 메모리에서도\n    \n- 동일한 크기의 **연속된 물리 프레임**이 반드시 필요하다.\n    \n\n이 조건은 시스템 상태에 따라 충족되지 않을 수 있다.\n\n- 장시간 동작\n    \n- 잦은 메모리 할당/해제  \n    → 물리 메모리 단편화\n    \n\n---\n\n## 3. 두 조건이 동시에 필요한 이유\n\n|구분|필요 여부|이유|\n|---|---|---|\n|가상 주소 연속성|필수|Huge Page는 하나의 가상 페이지 단위|\n|물리 주소 연속성|필수|MMU가 offset 기반으로 주소 계산|\n\n하나라도 만족하지 못하면:\n\n- Huge Page 생성 불가\n    \n- 일반 4KB 페이지로 처리\n    \n\n---\n\n## 4. 한 문장 요약\n\nHuge Page는 하나의 페이지로 동작하기 때문에, 가상 주소 공간과 물리 주소 공간 모두에서 설정된 페이지 크기만큼 연속된 주소 공간이 존재해야만 생성할 수 있다.\n\n이 이해가 되면  \nTHP가 “될 때도 있고 안 될 때도 있는 이유”가 완전히 설명된다.","x":-1320,"y":2786,"width":446,"height":429,"color":"3"},
+		{"id":"55efb02c355f87be","type":"file","file":"프로세스 통신(공유 메모리, 소켓, 파이프, 시그널).md","x":-1240,"y":-840,"width":400,"height":400},
+		{"id":"bbbe12bbccfb6217","type":"file","file":"배타적 제어(상호 배제).md","x":-1798,"y":-839,"width":400,"height":400},
+		{"id":"c2e36c1ffbba61d1","type":"file","file":"프로세스 vs 스레드.md","x":1920,"y":-258,"width":400,"height":914},
+		{"id":"cd2a142f4dc85130","type":"file","file":"멀티 프로세스 vs  멀티 스레드.md","x":2400,"y":-41,"width":400,"height":481},
+		{"id":"bbf5d5f5eff39664","type":"file","file":"스레드 구현 방법.md","x":2880,"y":79,"width":400,"height":241,"color":"3"},
+		{"id":"0f2a7b016ebfe47d","type":"text","text":"디바이스\n(저장 장치)","x":128,"y":984,"width":119,"height":60,"color":"2"},
+		{"id":"78024969b39a79ff","type":"file","file":"디바이스 드라이버.md","x":495,"y":2280,"width":400,"height":400},
+		{"id":"8474183d4029f4ed","type":"file","file":"디바이스 파일.md","x":495,"y":2800,"width":400,"height":400},
+		{"id":"a94a3fe4fabdd527","type":"file","file":"메모리 맵 입출력(MIMO).md","x":1060,"y":2280,"width":400,"height":400},
+		{"id":"005509d3da20499b","type":"file","file":"폴링.md","x":1060,"y":2760,"width":400,"height":400},
+		{"id":"b48cdba4437c645d","type":"file","file":"인터럽트.md","x":1060,"y":3240,"width":400,"height":400},
+		{"id":"265be0fd1dea2fc4","type":"file","file":"메모리 맵 파일.md","x":230,"y":4360,"width":400,"height":400},
+		{"id":"092a08dd0b618fd7","x":720,"y":3985,"width":187,"height":60,"color":"2","type":"text","text":"일반적인 파일 시스템"},
+		{"id":"c67217da23d5e563","x":1060,"y":3760,"width":429,"height":336,"type":"file","file":"쿼터.md"},
+		{"id":"2b210bd3cbf09daf","x":1060,"y":4140,"width":400,"height":400,"type":"file","file":"파일의 정합성 유지.md"},
+		{"id":"4b2fcf723eb67f26","type":"file","file":"⭐프로세스부터 저장장치까지 처리 흐름 종합 정리.md","x":1640,"y":2565,"width":480,"height":780,"color":"6"}
 	],
 	"edges":[
 		{"id":"7bb0265a94f90c6f","fromNode":"fce36db2197fbb68","fromSide":"left","toNode":"bdeef942c7cf76c1","toSide":"right"},
@@ -74,6 +91,23 @@
 		{"id":"3b6c8181872e9bca","fromNode":"2894b292333662f3","fromSide":"bottom","toNode":"0301d84da83f59a8","toSide":"top"},
 		{"id":"ddf3c93a5f9fe7f4","fromNode":"0301d84da83f59a8","fromSide":"right","toNode":"290af38e705cb64b","toSide":"left"},
 		{"id":"a84ff7ce118ee7cf","fromNode":"0301d84da83f59a8","fromSide":"left","toNode":"35114c855b8ad0a1","toSide":"right"},
-		{"id":"1e0eb33169ef49f0","fromNode":"0a5126c83eaeaf3a","fromSide":"left","toNode":"11ef9f5f9c1961d2","toSide":"right","toEnd":"none"}
+		{"id":"1e0eb33169ef49f0","fromNode":"0a5126c83eaeaf3a","fromSide":"left","toNode":"11ef9f5f9c1961d2","toSide":"right","toEnd":"none"},
+		{"id":"b3827c5cbbbc7673","fromNode":"fce36db2197fbb68","fromSide":"left","toNode":"55efb02c355f87be","toSide":"right"},
+		{"id":"0f11526a01a673d7","fromNode":"55efb02c355f87be","fromSide":"left","toNode":"bbbe12bbccfb6217","toSide":"right"},
+		{"id":"eea4d20283f13c63","fromNode":"fce36db2197fbb68","fromSide":"right","toNode":"c2e36c1ffbba61d1","toSide":"left"},
+		{"id":"a8f84516efc94633","fromNode":"c2e36c1ffbba61d1","fromSide":"right","toNode":"cd2a142f4dc85130","toSide":"left"},
+		{"id":"0e30ff008553ddc9","fromNode":"cd2a142f4dc85130","fromSide":"right","toNode":"bbf5d5f5eff39664","toSide":"left","toEnd":"none"},
+		{"id":"ed076b7b0b8b6bd4","fromNode":"3d1af7ede8e50e5f","fromSide":"bottom","toNode":"0f2a7b016ebfe47d","toSide":"top"},
+		{"id":"e0bd0f753eaa76c4","fromNode":"0f2a7b016ebfe47d","fromSide":"bottom","toNode":"78024969b39a79ff","toSide":"top"},
+		{"id":"de7bf9688b5a01d0","fromNode":"78024969b39a79ff","fromSide":"bottom","toNode":"8474183d4029f4ed","toSide":"top"},
+		{"id":"af2204b5e27ff023","fromNode":"78024969b39a79ff","fromSide":"right","toNode":"a94a3fe4fabdd527","toSide":"left"},
+		{"id":"c0f5e8a2ae3021fb","fromNode":"78024969b39a79ff","fromSide":"right","toNode":"005509d3da20499b","toSide":"left"},
+		{"id":"48cb93590ffc536d","fromNode":"78024969b39a79ff","fromSide":"right","toNode":"b48cdba4437c645d","toSide":"left"},
+		{"id":"b3b6b5e4d7229522","fromNode":"005509d3da20499b","fromSide":"bottom","toNode":"b48cdba4437c645d","toSide":"top","fromEnd":"arrow"},
+		{"id":"9f96ac3f6019197d","fromNode":"0f2a7b016ebfe47d","fromSide":"bottom","toNode":"49b34d903a3a515f","toSide":"top"},
+		{"id":"354beaf3db22ef22","fromNode":"49b34d903a3a515f","fromSide":"bottom","toNode":"265be0fd1dea2fc4","toSide":"top"},
+		{"id":"adffb689d7e03f03","fromNode":"49b34d903a3a515f","fromSide":"right","toNode":"092a08dd0b618fd7","toSide":"left"},
+		{"id":"d0bb599454b88ad0","fromNode":"092a08dd0b618fd7","fromSide":"right","toNode":"c67217da23d5e563","toSide":"left"},
+		{"id":"10d4c3fa949e34f8","fromNode":"092a08dd0b618fd7","fromSide":"right","toNode":"2b210bd3cbf09daf","toSide":"left"}
 	]
 }
