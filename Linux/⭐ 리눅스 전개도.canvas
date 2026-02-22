@@ -42,7 +42,7 @@
 		{"id":"cd2a142f4dc85130","type":"file","file":"Linux/📚이론/단어 카드/멀티 프로세스 vs  멀티 스레드.md","x":2400,"y":-41,"width":400,"height":481},
 		{"id":"78024969b39a79ff","type":"file","file":"Linux/📚이론/단어 카드/디바이스 드라이버.md","x":495,"y":2280,"width":400,"height":400},
 		{"id":"8474183d4029f4ed","type":"file","file":"Linux/📚이론/단어 카드/디바이스 파일.md","x":495,"y":2800,"width":400,"height":400},
-		{"id":"a94a3fe4fabdd527","type":"file","file":"Linux/📚이론/단어 카드/메모리 맵 입출력(MIMO).md","x":1060,"y":2280,"width":400,"height":400},
+		{"id":"a94a3fe4fabdd527","type":"file","file":"Linux/📚이론/단어 카드/메모리 맵 입출력(MIMO).md","x":1060,"y":2280,"width":445,"height":400},
 		{"id":"005509d3da20499b","type":"file","file":"Linux/📚이론/단어 카드/폴링.md","x":1060,"y":2760,"width":400,"height":400},
 		{"id":"b48cdba4437c645d","type":"file","file":"Linux/📚이론/단어 카드/인터럽트.md","x":1060,"y":3240,"width":400,"height":400},
 		{"id":"4b2fcf723eb67f26","type":"file","file":"Linux/📚이론/단어 카드/⭐프로세스부터 저장장치까지 처리 흐름 종합 정리.md","x":1640,"y":2565,"width":480,"height":780,"color":"6"},
@@ -82,7 +82,8 @@
 		{"id":"6e8c809e19b1ead8","type":"file","file":"컨테이너 vs 가상 머신.md","x":4160,"y":-705,"width":433,"height":664},
 		{"id":"4576e40c5b5f82e7","type":"file","file":"컨테이너 종류.md","x":4712,"y":-804,"width":400,"height":863},
 		{"id":"20042bc1d57c0b24","type":"file","file":"네임 스페이스.md","x":5232,"y":-688,"width":400,"height":632},
-		{"id":"6b0aad6528857aa0","type":"text","text":"### 컨테이너란?\n\n독립된 네임스페이스를 가지고 다른 프로세스와 실행 환경이 나뉘는 하나 또는 여러 프로세스","x":4160,"y":-910,"width":392,"height":106,"color":"3"}
+		{"id":"6b0aad6528857aa0","type":"text","text":"### 컨테이너란?\n\n독립된 네임스페이스를 가지고 다른 프로세스와 실행 환경이 나뉘는 하나 또는 여러 프로세스","x":4160,"y":-910,"width":392,"height":106,"color":"3"},
+		{"id":"a92688dafced9541","type":"file","file":"💻 면접 대비 꼬리 질문/리눅스/멀티스레딩과 멀티프로세싱 환경에서 각각의 메모리 관리 방식과 장애 전파 특성을 상세히 설명하세요..md","x":2400,"y":-1520,"width":400,"height":1331}
 	],
 	"edges":[
 		{"id":"7bb0265a94f90c6f","fromNode":"fce36db2197fbb68","fromSide":"left","toNode":"bdeef942c7cf76c1","toSide":"right","label":"1"},
@@ -163,6 +164,7 @@
 		{"id":"9a7b5e3d4906c9ff","fromNode":"9bce4545ff71e865","fromSide":"right","toNode":"6e8c809e19b1ead8","toSide":"left"},
 		{"id":"827674145755c4c4","fromNode":"6e8c809e19b1ead8","fromSide":"right","toNode":"4576e40c5b5f82e7","toSide":"left"},
 		{"id":"5f7d8eaae2dccccb","fromNode":"4576e40c5b5f82e7","fromSide":"right","toNode":"20042bc1d57c0b24","toSide":"left"},
-		{"id":"e9c6aaadf9385ba1","fromNode":"6e8c809e19b1ead8","fromSide":"bottom","toNode":"cec1bad02c6f12cb","toSide":"top"}
+		{"id":"e9c6aaadf9385ba1","fromNode":"6e8c809e19b1ead8","fromSide":"bottom","toNode":"cec1bad02c6f12cb","toSide":"top"},
+		{"id":"df3a861901a9a9f3","fromNode":"cd2a142f4dc85130","fromSide":"top","toNode":"a92688dafced9541","toSide":"bottom"}
 	]
 }
