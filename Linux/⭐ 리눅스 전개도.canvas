@@ -47,7 +47,7 @@
 		{"id":"b48cdba4437c645d","type":"file","file":"Linux/📚이론/단어 카드/인터럽트.md","x":1060,"y":3240,"width":400,"height":400},
 		{"id":"4b2fcf723eb67f26","type":"file","file":"Linux/📚이론/단어 카드/⭐프로세스부터 저장장치까지 처리 흐름 종합 정리.md","x":1640,"y":2565,"width":480,"height":780,"color":"6"},
 		{"id":"a4eab5501c65f7d1","type":"text","text":"파일 시스템","x":103,"y":1029,"width":124,"height":60,"color":"2"},
-		{"id":"0f2a7b016ebfe47d","type":"text","text":"디바이스\n(저장 장치)","x":280,"y":1029,"width":119,"height":55,"color":"2"},
+		{"id":"0f2a7b016ebfe47d","type":"text","text":"디바이스\n(저장 장치)","x":280,"y":960,"width":119,"height":55,"color":"2"},
 		{"id":"49b34d903a3a515f","type":"file","file":"Linux/📚이론/단어 카드/파일 시스템.md","x":230,"y":4095,"width":400,"height":400},
 		{"id":"092a08dd0b618fd7","type":"text","text":"일반적인 파일 시스템","x":720,"y":4265,"width":187,"height":60,"color":"2"},
 		{"id":"265be0fd1dea2fc4","type":"file","file":"Linux/📚이론/단어 카드/메모리 맵 파일.md","x":230,"y":4640,"width":400,"height":400},
