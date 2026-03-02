@@ -96,7 +96,7 @@
 		{"id":"e228555430093396","type":"file","file":"Linux/📚이론/단어 카드/프로세스 권한.md","x":-3746,"y":6371,"width":400,"height":640},
 		{"id":"d673a77401274d22","type":"file","file":"Linux/📚이론/단어 카드/파일 권한.md","x":-3746,"y":7211,"width":400,"height":540},
 		{"id":"0c5dae3d72504fd5","type":"file","file":"Linux/📚이론/단어 카드/중앙 집중식 사용자 관리.md","x":-3214,"y":6371,"width":520,"height":1560},
-		{"id":"71ae78a13e917efb","type":"file","file":"Linux/📚이론/단어 카드/리눅스 접근 제어 유형 - DAC vs MAC.md","x":-3186,"y":5866,"width":400,"height":170},
+		{"id":"71ae78a13e917efb","type":"file","file":"Linux/📚이론/단어 카드/리눅스 접근 제어 유형 - DAC vs MAC.md","x":-3186,"y":5866,"width":492,"height":170},
 		{"id":"015ee043f7937489","type":"file","file":"Linux/📚이론/단어 카드/사용자(시스템 사용자 vs 일반 사용자).md","x":-3186,"y":6131,"width":464,"height":117},
 		{"id":"09fe8d52163b2625","type":"text","text":"접근 제어","x":-3040,"y":5651,"width":109,"height":50,"color":"1"},
 		{"id":"e20e649068cee010","type":"file","file":"Linux/📚이론/단어 카드/리눅스 시작 프로세스.md","x":-1880,"y":6978,"width":400,"height":324},
@@ -107,8 +107,8 @@
 		{"id":"0b6dd16500421146","type":"text","text":"리눅스\n애플리케이션","x":-1747,"y":6579,"width":134,"height":55,"color":"1"},
 		{"id":"05d8d29dcf5b523b","type":"file","file":"Linux/📚이론/단어 카드/리눅스 애플리케이션 배포 방식 비교.md","x":-580,"y":6270,"width":444,"height":673},
 		{"id":"de4a0bf9df6cf2b6","type":"file","file":"Linux/📚이론/단어 카드/샌드박스.md","x":-4946,"y":6074,"width":556,"height":349,"color":"3"},
-		{"id":"018957a2f6f52e47","x":5232,"y":-1271,"width":400,"height":467,"type":"file","file":"Linux/📚이론/단어 카드/네임 스페이스(NameSpace).md"},
-		{"id":"5c3ddfa0012d3255","x":5740,"y":-1271,"width":565,"height":601,"type":"file","file":"Linux/📚이론/단어 카드/cgroup.md"}
+		{"id":"018957a2f6f52e47","type":"file","file":"Linux/📚이론/단어 카드/네임 스페이스(NameSpace).md","x":5232,"y":-1271,"width":400,"height":467},
+		{"id":"5c3ddfa0012d3255","type":"file","file":"Linux/📚이론/단어 카드/cgroup.md","x":5740,"y":-1271,"width":565,"height":601}
 	],
 	"edges":[
 		{"id":"7bb0265a94f90c6f","fromNode":"fce36db2197fbb68","fromSide":"left","toNode":"bdeef942c7cf76c1","toSide":"right","label":"1"},

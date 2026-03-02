@@ -16,7 +16,7 @@
 |PC A|AA-AA|
 |PC B|BB-BB|
 |PC C|CC-CC|
-
+>실제로는 스위치 테이블은 MAC 주소와 포트번호를 맵핑해 기록한다.
 ---
 
 ## ARP 요청 (ARP Request – Broadcast)
