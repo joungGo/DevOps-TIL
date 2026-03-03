@@ -1,0 +1,15 @@
+{
+	"nodes":[
+		{"id":"41490c8161b7244d","type":"text","text":"Docker","x":-227,"y":-89,"width":96,"height":50,"color":"1"},
+		{"id":"2d0b4f47372517c5","type":"file","file":"Docker/📚이론/단어 카드/컨테이너(Container).md","x":203,"y":-265,"width":400,"height":405},
+		{"id":"7fc75cbf96c0be9c","type":"text","text":"### 새롭게 알게된 사실\n\n- docker container run은 이미지가 없으면 다운로드 후 컨테이너를 실행한다.\n- 컨테이너 실행에는 이미지가 존재해야 한다.\n- `docker container run ~` 에 `-port`옵션을 사용하지 않으면 외부(호스트)에서 컨테이너로 접근할 수 없다.\n- ","x":-476,"y":-680,"width":595,"height":356,"color":"6"},
+		{"id":"07e0f7aa093a0d20","type":"file","file":"Docker/📚이론/단어 카드/도커 엔진.md","x":700,"y":-433,"width":400,"height":743},
+		{"id":"7d420087b8d71c42","type":"file","file":"Docker/📚이론/단어 카드/도커 이미지 캐시.md","x":1560,"y":-260,"width":400,"height":400}
+	],
+	"edges":[
+		{"id":"39ed1884ea7a6848","fromNode":"41490c8161b7244d","fromSide":"top","toNode":"7fc75cbf96c0be9c","toSide":"bottom"},
+		{"id":"32d2863285cbbd04","fromNode":"41490c8161b7244d","fromSide":"right","toNode":"2d0b4f47372517c5","toSide":"left"},
+		{"id":"3288fea7df1dabb8","fromNode":"2d0b4f47372517c5","fromSide":"right","toNode":"07e0f7aa093a0d20","toSide":"left"},
+		{"id":"c7e9f9294daeebdc","fromNode":"07e0f7aa093a0d20","fromSide":"right","toNode":"7d420087b8d71c42","toSide":"left","label":"도커 엔진은 이미지를 저장 및 캐시하는\n기능을 가진다."}
+	]
+}
