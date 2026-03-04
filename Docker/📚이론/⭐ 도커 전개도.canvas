@@ -4,12 +4,24 @@
 		{"id":"2d0b4f47372517c5","type":"file","file":"Docker/📚이론/단어 카드/컨테이너(Container).md","x":203,"y":-265,"width":400,"height":405},
 		{"id":"7fc75cbf96c0be9c","type":"text","text":"### 새롭게 알게된 사실\n\n- docker container run은 이미지가 없으면 다운로드 후 컨테이너를 실행한다.\n- 컨테이너 실행에는 이미지가 존재해야 한다.\n- `docker container run ~` 에 `-port`옵션을 사용하지 않으면 외부(호스트)에서 컨테이너로 접근할 수 없다.\n- ","x":-476,"y":-680,"width":595,"height":356,"color":"6"},
 		{"id":"07e0f7aa093a0d20","type":"file","file":"Docker/📚이론/단어 카드/도커 엔진.md","x":700,"y":-433,"width":400,"height":743},
-		{"id":"7d420087b8d71c42","type":"file","file":"Docker/📚이론/단어 카드/도커 이미지 캐시.md","x":1560,"y":-260,"width":400,"height":400}
+		{"id":"7d420087b8d71c42","type":"file","file":"Docker/📚이론/단어 카드/도커 이미지 캐시.md","x":1560,"y":-260,"width":400,"height":400},
+		{"id":"cf8bb9b2efd22aa2","x":1550,"y":220,"width":420,"height":166,"color":"3","type":"text","text":"### 이미지 레이어\n**이미지**는 물리적으로는 여러개의 작은 파일로 구성되어 있다. 그리고 도커가 이 파일들을 조립해 컨테이너의 **내부 파일 시스템**을 만든다.\n여기서 각각의 작은 파일들을 **이미지 레이어** 라고 한다."},
+		{"id":"7ee6cda13cbe7858","x":2020,"y":220,"width":615,"height":165,"color":"3","type":"text","text":"도커는 같은 이미지를 재빌드 할 때 도커 엔진의 캐시에 저장된 레이어와 재빌드하는 레이어를 비교해 재사용 여부를 결정합니다. 이때, 비교값으로 **해시**를 사용합니다.\n해시는 디지털 지문으로 Dockerfile 스크립트의 인스트럭션과 인스트럭션에 의해 복사되는 파일의 내용으로부터 계산됩니다.\n\n>캐시 미스가 발생하면 다음에 오는 인스트럭션이 수정된 것이 없더라고 실행됩니다."},
+		{"id":"179c945d84bfe751","x":-237,"y":480,"width":117,"height":60,"color":"2","type":"text","text":"Dockerfile"},
+		{"id":"a8abb616d76f6cca","x":-378,"y":680,"width":400,"height":720,"type":"file","file":"멀티 스테이지 빌드.md"},
+		{"id":"d7cd65c1e4d019f9","x":-960,"y":1159,"width":441,"height":203,"color":"6","type":"text","text":"# 🎯 면접에서 이렇게 말하면 좋다\n\n> 멀티 스테이지 빌드는 빌드 환경과 실행 환경을 분리하여  \n> 최종 이미지를 경량화하고 보안을 강화하기 위한 방식입니다.  \n> 특히 컨테이너 오케스트레이션 환경에서 배포 속도와 안정성에 큰 장점이 있습니다."},
+		{"id":"57e5c6da071cec55","x":-1000,"y":700,"width":481,"height":339,"color":"4","type":"text","text":"### 왜, 멀티 스테이지 빌드가 이미지를 경량화 시킬까?\n\n서버에 배포되는 이미지는 결국 최종 이미지이다.\n>최종 이미지: Dockerfile에서 마지막 FROM 스테이지가 기준\n\n멀티 스테이지 빌드 구조의 경우 최종적으로는 1개의 이미지만 생성되지만 생성된 이미지에는 1단계인 빌드 단계가 포함되어 있지 않다. 때문에 단일 스테이지 빌드 구조에 비해 이미지 크기가 작은 것이다.\n\n2단계 빌드의 경우 1단계의 빌드를 사용하고 있는데, 이는 1단계의 빌드 결과가 도커 내부 파일에 저장되고, 이를 2단계 실행 시 가져다 사용할 수 있기 때문이다."}
 	],
 	"edges":[
 		{"id":"39ed1884ea7a6848","fromNode":"41490c8161b7244d","fromSide":"top","toNode":"7fc75cbf96c0be9c","toSide":"bottom"},
 		{"id":"32d2863285cbbd04","fromNode":"41490c8161b7244d","fromSide":"right","toNode":"2d0b4f47372517c5","toSide":"left"},
 		{"id":"3288fea7df1dabb8","fromNode":"2d0b4f47372517c5","fromSide":"right","toNode":"07e0f7aa093a0d20","toSide":"left"},
-		{"id":"c7e9f9294daeebdc","fromNode":"07e0f7aa093a0d20","fromSide":"right","toNode":"7d420087b8d71c42","toSide":"left","label":"도커 엔진은 이미지를 저장 및 캐시하는\n기능을 가진다."}
+		{"id":"c7e9f9294daeebdc","fromNode":"07e0f7aa093a0d20","fromSide":"right","toNode":"7d420087b8d71c42","toSide":"left","label":"도커 엔진은 이미지를 저장 및 캐시하는\n기능을 가진다."},
+		{"id":"ac3f7eacf6531d79","fromNode":"7d420087b8d71c42","fromSide":"bottom","toNode":"cf8bb9b2efd22aa2","toSide":"top"},
+		{"id":"517c04326de058dc","fromNode":"7d420087b8d71c42","fromSide":"bottom","toNode":"7ee6cda13cbe7858","toSide":"top"},
+		{"id":"6fa4673e4da86b25","fromNode":"41490c8161b7244d","fromSide":"bottom","toNode":"179c945d84bfe751","toSide":"top"},
+		{"id":"38f4adc4e60cbfbe","fromNode":"179c945d84bfe751","fromSide":"bottom","toNode":"a8abb616d76f6cca","toSide":"top"},
+		{"id":"fac0440826b411d5","fromNode":"a8abb616d76f6cca","fromSide":"left","toNode":"d7cd65c1e4d019f9","toSide":"right"},
+		{"id":"1230dec81cf51afe","fromNode":"a8abb616d76f6cca","fromSide":"left","toNode":"57e5c6da071cec55","toSide":"right"}
 	]
 }
