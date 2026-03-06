@@ -1,7 +1,11 @@
 > [!note] 면접 답변
-> Ingress는 외부에서 들어오는 HTTP/HTTPS 요청을 도메인이나 경로 기반으로 여러 Service에 라우팅하는 Kubernetes 리소스이며, ClusterIP는 클러스터 내부 Pod 간 통신을 위해 Service에 할당되는 가상 IP이다.
+> Ingress는 외부에서 들어오는 HTTP/HTTPS 요청을 도메인이나 경로 기반으로 여러 Service에 라우팅하는 Kubernetes 리소스입니다.
 
 ---
+
+>**Ingress는 Service 타입이 아니다.**  
+  Ingress는 **외부 HTTP/HTTPS 요청을 클러스터 내부 Service로 라우팅하는 리소스**이다.
+
 ## 1. Ingress란 무엇인가
 
 **Ingress는 외부에서 클러스터 내부 서비스로 들어오는 HTTP/HTTPS 트래픽을 관리하는 리소스이다.**
@@ -108,6 +112,9 @@ Ingress는 **L7(HTTP/HTTPS) 라우팅** 방식이다.
 |NodePort|Node 포트로 직접 접근|
 |LoadBalancer|클라우드 로드밸런서 생성|
 |Ingress|HTTP/HTTPS 라우팅|
+
+>**Ingress는 Service 타입이 아니다.**  
+  Ingress는 **외부 HTTP/HTTPS 요청을 클러스터 내부 Service로 라우팅하는 리소스**이다.
 
 구조 비교
 
