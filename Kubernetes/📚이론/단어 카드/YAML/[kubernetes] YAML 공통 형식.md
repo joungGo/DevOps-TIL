@@ -73,13 +73,13 @@ networking.k8s.io/v1
 
 예
 
-```
-Pod
-Deployment
-Service
-ConfigMap
-Secret
-Ingress
+```markdown
+Pod         # 하나 이상의 컨테이너를 실행하는 Kubernetes의 최소 배포 단위
+Deployment  # Pod를 생성하고 개수 유지, 업데이트, 롤백 등을 관리하는 리소스
+Service     # 여러 Pod에 안정적으로 접근하기 위한 고정 네트워크 엔드포인트 제공
+ConfigMap   # 애플리케이션 설정 정보를 Key-Value 형태로 저장하는 리소스
+Secret      # 비밀번호, 토큰 같은 민감 정보를 저장하는 리소스
+Ingress     # 외부 HTTP/HTTPS 트래픽을 내부 Service로 라우팅하는 리소스
 ```
 
 즉 Kubernetes에게
@@ -113,8 +113,19 @@ metadata:
 |name|리소스 이름|
 |namespace|리소스가 속한 네임스페이스|
 |labels|리소스 식별용 태그|
+>Namespace는 Kubernetes 클러스터 내에서 리소스를 논리적으로 구분하고 관리하기 위한 격리된 공간이다.
 
 labels는 **Service가 Pod를 찾을 때 사용된다.**
+
+> [!info] Kubernetes 기본 Namespace
+>
+> | namespace       | 설명 |
+> |-----------------|------------------------------|
+> | default         | 기본 namespace (명시하지 않으면 여기에 생성) |
+> | kube-system     | Kubernetes 시스템 컴포넌트 |
+> | kube-public     | 모든 사용자가 읽을 수 있는 namespace |
+> | kube-node-lease | 노드 상태 정보 관리 |
+> | (사용자 namespace) | (사용자가 만든 namespace) |
 
 ---
 
