@@ -1,132 +1,128 @@
-## ExternalName
+## ExternalName Service
 
-**ExternalName은 Kubernetes Service 타입 중 하나로, 클러스터 내부 서비스 이름을 외부 도메인 이름에 매핑하기 위한 Service이다.**
-
-즉 Kubernetes 내부에서 **외부 서비스에 접근할 때 DNS 별칭(alias)을 제공하는 역할**을 한다.
+**ExternalName Service**는 Kubernetes 클러스터 내부에서 **외부 서비스의 DNS 이름을 사용하도록 연결해 주는 Service 타입**이다.  
+즉, **클러스터 밖에 있는 서비스를 내부 서비스처럼 접근할 수 있게 해준다.**
 
 ---
 
-## 1. 동작 방식
+# 1. ExternalName Service 의미
 
-ExternalName Service는 **IP를 생성하지 않는다.**
+보통 Service는 **Pod에 연결**된다.
 
-대신 DNS에서 다음과 같이 변환된다.
+하지만 **ExternalName Service는 Pod와 연결되지 않고 외부 도메인으로 연결된다.**
+
+구조
+
+```
+Pod → Service → 외부 DNS
+```
 
 예
 
-```text
-Service 이름        → 실제 외부 도메인
-payment-service     → api.payment.com
+```
+Pod → external-service → google.com
 ```
 
-Pod에서 요청
-
-```text
-http://payment-service
-```
-
-DNS 변환
-
-```text
-payment-service → api.payment.com
-```
-
-즉
-
-```text
-Pod
- ↓
-Kubernetes DNS
- ↓
-External Domain
-```
+즉 Pod에서 `external-service`로 접속하면 **실제로는 google.com으로 연결된다.**
 
 ---
 
-## 2. 예시 YAML
+# 2. Service 타입 중 하나
+
+Kubernetes Service에는 여러 타입이 있다.
+
+|Service 타입|설명|
+|---|---|
+|ClusterIP|클러스터 내부 접근|
+|NodePort|노드 IP로 외부 접근|
+|LoadBalancer|외부 로드밸런서|
+|ExternalName|외부 DNS 연결|
+
+---
+
+# 3. ExternalName Service 예시
+
+YAML 예
 
 ```yaml
 apiVersion: v1
 kind: Service
 metadata:
-  name: external-payment
+  name: external-service
 spec:
   type: ExternalName
-  externalName: api.payment.com
+  externalName: google.com
 ```
 
-의미
+설명
 
-```text
-external-payment → api.payment.com
-```
-
-Pod에서 접근
-
-```text
-http://external-payment
-```
-
-실제로는
-
-```text
-http://api.payment.com
-```
-
-으로 연결된다.
-
----
-
-## 3. 특징
-
-|특징|설명|
+|항목|의미|
 |---|---|
-|IP 없음|ClusterIP 생성 안함|
-|DNS 별칭|CNAME 레코드 생성|
-|외부 서비스 연결|클러스터 외부 서비스 사용|
-|kube-proxy 사용 안함|단순 DNS 변환|
+|type|ExternalName Service|
+|externalName|연결할 외부 도메인|
 
 ---
 
-## 4. 사용 예
+# 4. 동작 방식
 
-예를 들어 회사 시스템이 다음 구조라고 가정한다.
+Pod에서
 
-```text
-Kubernetes
-   |
-   | → 내부 서비스
-   |
-   | → 외부 DB
-   | → 외부 API
+```
+http://external-service
 ```
 
-ExternalName 사용
+접속하면
 
-```text
-db-service → company-db.example.com
-payment-service → payment-api.example.com
+DNS가 다음처럼 변환된다.
+
+```
+external-service → google.com
 ```
 
-Pod에서는 내부 서비스처럼 사용 가능하다.
+즉 실제 연결
 
-```text
-http://payment-service
+```
+Pod → google.com
 ```
 
 ---
 
-## 5. 다른 Service 타입과 차이
+# 5. 특징
 
-|Service 타입|역할|
-|---|---|
-|ClusterIP|클러스터 내부 통신|
-|NodePort|Node 포트로 외부 접근|
-|LoadBalancer|외부 로드밸런서 생성|
-|ExternalName|외부 도메인 연결|
+ExternalName Service 특징
+
+- Pod와 연결되지 않음
+    
+- DNS 이름만 매핑
+    
+- ClusterIP 없음
+    
+- 외부 서비스 연결용
+    
 
 ---
 
-## 면접용 한 줄 정리
+# 6. 사용 예
 
-**ExternalName Service는 Kubernetes 내부 서비스 이름을 외부 도메인 이름에 매핑하여 Pod가 외부 서비스를 내부 서비스처럼 사용할 수 있도록 하는 DNS 기반 Service 타입이다.**
+ExternalName은 다음 상황에서 사용된다.
+
+예
+
+- 외부 데이터베이스
+    
+- 외부 API 서버
+    
+- 다른 클라우드 서비스
+    
+
+예
+
+```
+Pod → mysql-service → 외부 MySQL 서버
+```
+
+---
+
+# 핵심 정리
+
+ExternalName Service는 Kubernetes 클러스터 내부에서 외부 서비스의 DNS 이름을 사용할 수 있도록 연결해 주는 Service 타입이다. Pod와 직접 연결되지 않으며 DNS 이름을 외부 도메인으로 매핑하여 외부 서비스에 접근할 수 있도록 한다.

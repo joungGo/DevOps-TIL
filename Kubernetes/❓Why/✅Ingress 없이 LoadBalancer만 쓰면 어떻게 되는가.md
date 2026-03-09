@@ -1,5 +1,5 @@
 **결론:**  
-Ingress 없이 **Service type = LoadBalancer**만 사용하면 **외부 → Pod 접근은 가능하지만, 라우팅 기능이 거의 없다.**
+Ingress 없이 **LoadBalancer 타입 Service만 사용하면**, 외부에서 각 Service에 접근하기 위해 **Service마다 하나의 클라우드 LoadBalancer가 생성된다.** 이 경우 서비스 수만큼 외부 IP와 LoadBalancer 리소스가 필요하므로 **비용이 증가하고**, 하나의 도메인에서 **경로 기반(/api, /web 등)이나 호스트 기반 라우팅을 할 수 없다.** 따라서 여러 서비스를 외부에 노출할 때는 **하나의 LoadBalancer 뒤에 Ingress Controller를 두고 Ingress로 라우팅을 관리하는 방식**이 일반적으로 사용된다.
 
 ---
 

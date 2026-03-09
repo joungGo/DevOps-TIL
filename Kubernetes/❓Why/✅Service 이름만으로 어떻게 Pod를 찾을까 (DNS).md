@@ -96,7 +96,7 @@ Service 이름으로 Pod를 찾는 이유는 **쿠버네티스 내부 DNS(CoreDN
 
 쿠버네티스를 처음 배울 때 여기서 **많이 헷갈리는 중요한 질문**이 있다.
 
-"[[Service는 Pod를 어떻게 찾을까]]?"
+"[[✅Service는 Pod를 어떻게 찾을까]]?"
 
-"[[Pod는 CoreDNS의 IP를 어떻게 알고 있을까]]"
+"[[✅Pod는 CoreDNS의 IP를 어떻게 알고 있을까]]"
 
