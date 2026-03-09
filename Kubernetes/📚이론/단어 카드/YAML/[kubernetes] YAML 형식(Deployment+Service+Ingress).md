@@ -182,11 +182,11 @@ Ingress는 외부 트래픽을 Service로 라우팅하는 역할을 한다.
     
 - Service 없이 Pod 접근하면 왜 문제인가
     
-- [[Ingress 없이 LoadBalancer만 쓰면 어떻게 되는가]]
+- [[✅Ingress 없이 LoadBalancer만 쓰면 어떻게 되는가]]
     
-- [[selector와 label이 왜 중요한가]]
+- [[✅selector와 label이 왜 중요한가]]
     
-- [[containerPort vs port vs targetPort 차이]]
+- [[✅containerPort vs port vs targetPort 차이]]
     
 
 이건 **쿠버네티스 면접에서 거의 80% 확률로 나오는 질문**이다.
