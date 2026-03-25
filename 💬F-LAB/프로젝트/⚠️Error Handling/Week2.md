@@ -105,6 +105,8 @@ Minikube는 로컬에서 격리된 Kubernetes 노드 환경(VM 또는 컨테이�
 
 ```Linux
 eval $(minikube docker-env) # Mac/Linux
+
+docker info | grep -E "Name|Server Version" # 확인 명령어
 ```
 
 ```powershell
@@ -271,6 +273,7 @@ ClusterIP + Ingress 조합으로 진행
 ---
 
 #### 📌 문제 4: NodePort(80:31003)와 Windows Docker 드라이버 환경에서의 직접 접속 실패
+
 - **문제**  
   - `ingress-nginx-controller` 서비스:
     ```text
@@ -279,6 +282,17 @@ ClusterIP + Ingress 조합으로 진행
   - 의미: **클러스터 내부 서비스 포트 80 ↔ 노드 외부 포트 31003**.  
   - 하지만 Windows + Docker 드라이버 조합에서는 `192.168.49.2:31003` 로 **호스트에서 직접 접속이 되지 않음** (VM 내부에서만 의미 있는 주소).
   - 그래서 `http://192.168.49.2:31003/healthz`, `http://url-shortener.local:31003/healthz` 요청들이 계속 실패.
+
+정리하면 현재 ingress가 외부 요청을 받아 LB 타입의 서비스로 라우팅하고 이 서비스가 하위의 svc, pod에게 라우팅을 하는 구조야. 이걸 만족하려면 ingress-nginx가 현재 LB 타입이어야 하는데 현재 NordePort로 되어 있어서 호스트로 외부에서 요청이 불가능해. (Nortport는 포트가 있어야 함). 그래서 ingres-nginx 타입을 LB로 변경하거나 NortPort를 사용한 외부 요청방식을 사용해야 함. 
+만약, ingress-nginx를 LB타입으로 변경하지 않는다면 url-shortener-api 서비스에 직접 접근해야 해. 그런데 이 서비스의 타입이 ClusterIp로 되어 있어서 또 외부에서 접근이 불가능함. 여기서 할 수 있는건 타입을 NortPort로 변경하거나 다른 방법을 찾는 것임. 만약 NortPort로 변경하면 Port를 사용해 직접 접속할 수 있음. 다른 방법은 **minikube service -n ingress-nginx ingress-nginx-controller** 이걸 사용하는 것임. 이 명령어는 내부적으로 Minikube가 **NodePort**를 찾아서 외부에서 접속할 수 있는 브라우저 URL를 출력함. 중요한건 외부 요청이 ingress-nginx 즉, ingress를 통해 들어올 수 있는 경로를 만들어준다는 것임. 또한 타입이 ClusterIP라면 minikube가 **임시 NodePort 터널** 만들어서 접속 가능한 URL를 출력함. 이걸 사용하면 접속 가능.
+(로컬에서 host 도메인으로 요청을 하기 위해서는 로컬과 도메인간 맵핑 관계가 /etc/hosts 파일에 기입이 되어 있어야 함. 기입 후 테스트 하면 성공함.)
+![[Pasted image 20260320152000.png]]
+
+![[Pasted image 20260320152454.png]]
+
+이 둘의 ConentType이 다른 이유는 ingress 규칙에 맞으면 200ok를 반환하고 그렇지 않으면 빈화면을 반환하기 때문이다.
+
+
 
 - **해결 방법**  
   - NodePort 를 직접 쓰는 대신, minikube 가 제공하는 터널/포트포워딩 기능 사용:
