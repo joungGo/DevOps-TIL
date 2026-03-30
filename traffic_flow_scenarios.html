@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>EKS 트래픽 흐름 시나리오</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background: #f8f8f6;
+      color: #1a1a18;
+      padding: 32px 20px;
+      line-height: 1.6;
+    }
+    h1 {
+      font-size: 20px;
+      font-weight: 600;
+      margin-bottom: 6px;
+      color: #1a1a18;
+    }
+    .subtitle {
+      font-size: 13px;
+      color: #6b6b66;
+      margin-bottom: 24px;
+    }
+    .tab-bar {
+      display: flex;
+      gap: 6px;
+      flex-wrap: wrap;
+      margin-bottom: 20px;
+    }
+    .tab-btn {
+      padding: 7px 16px;
+      border: 1px solid #d3d1c7;
+      border-radius: 6px;
+      background: #fff;
+      color: #6b6b66;
+      font-size: 13px;
+      cursor: pointer;
+      transition: all .18s;
+      font-family: inherit;
+    }
+    .tab-btn:hover { border-color: #888780; color: #1a1a18; }
+    .tab-btn.active {
+      background: #e6f1fb;
+      color: #185fa5;
+      border-color: #85b7eb;
+      font-weight: 500;
+    }
+    .tab-content { display: none; }
+    .tab-content.active { display: block; }
+
+    .flow-box {
+      font-size: 12px;
+      color: #444441;
+      background: #f1efe8;
+      border: 1px solid #d3d1c7;
+      border-radius: 6px;
+      padding: 10px 14px;
+      margin: 0 0 14px;
+      font-family: "SFMono-Regular", Consolas, monospace;
+      line-height: 1.75;
+      overflow-x: auto;
+      white-space: pre-wrap;
+      word-break: break-all;
+    }
+    .step-row {
+      display: flex;
+      align-items: flex-start;
+      gap: 12px;
+      margin-bottom: 12px;
+    }
+    .step-num {
+      min-width: 26px;
+      height: 26px;
+      border-radius: 50%;
+      background: #e6f1fb;
+      color: #185fa5;
+      font-size: 12px;
+      font-weight: 500;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      margin-top: 1px;
+    }
+    .step-body { flex: 1; }
+    .step-title {
+      font-size: 13px;
+      font-weight: 600;
+      color: #1a1a18;
+      margin-bottom: 3px;
+    }
+    .step-desc {
+      font-size: 12px;
+      color: #5f5e5a;
+      line-height: 1.65;
+    }
+    .tag {
+      display: inline-block;
+      padding: 1px 7px;
+      border-radius: 4px;
+      font-size: 11px;
+      font-weight: 500;
+      margin-right: 4px;
+    }
+    .tag-warn  { background: #faeeda; color: #854f0b; }
+    .tag-info  { background: #e6f1fb; color: #185fa5; }
+    .tag-ok    { background: #eaf3de; color: #3b6d11; }
+    .tag-err   { background: #fcebeb; color: #a32d2d; }
+    .interview-box {
+      background: #faeeda;
+      border-left: 3px solid #ef9f27;
+      border-radius: 0 6px 6px 0;
+      padding: 10px 14px;
+      margin: 14px 0 0;
+      font-size: 12px;
+      color: #1a1a18;
+      line-height: 1.7;
+    }
+
+    @media (prefers-color-scheme: dark) {
+      body { background: #1e1e1c; color: #d4d2c8; }
+      h1 { color: #d4d2c8; }
+      .subtitle { color: #888780; }
+      .tab-btn { background: #2c2c2a; color: #888780; border-color: #444441; }
+      .tab-btn:hover { border-color: #888780; color: #d4d2c8; }
+      .tab-btn.active { background: #0c447c; color: #b5d4f4; border-color: #185fa5; }
+      .flow-box { background: #2c2c2a; border-color: #444441; color: #b4b2a9; }
+      .step-num { background: #0c447c; color: #b5d4f4; }
+      .step-title { color: #d4d2c8; }
+      .step-desc { color: #888780; }
+      .tag-warn  { background: #633806; color: #fac775; }
+      .tag-info  { background: #0c447c; color: #b5d4f4; }
+      .tag-ok    { background: #27500a; color: #c0dd97; }
+      .tag-err   { background: #791f1f; color: #f7c1c1; }
+      .interview-box { background: #412402; border-color: #ba7517; color: #d4d2c8; }
+    }
+  </style>
+</head>
+<body>
+  <h1>EKS 아키텍처 — 트래픽 흐름 시나리오</h1>
+  <p class="subtitle">각 탭을 클릭해 시나리오별 패킷 경로와 DevOps 면접 포인트를 확인하세요.</p>
+
+  <div class="tab-bar">
+    <button class="tab-btn active" onclick="showTab('t1',this)">① Pod → 외부 curl</button>
+    <button class="tab-btn" onclick="showTab('t2',this)">② 외부 → Pod (인바운드)</button>
+    <button class="tab-btn" onclick="showTab('t3',this)">③ Pod ↔ Pod 통신</button>
+    <button class="tab-btn" onclick="showTab('t4',this)">④ Lens 조회 원리</button>
+    <button class="tab-btn" onclick="showTab('t5',this)">⑤ kubectl 접속 원리</button>
+    <button class="tab-btn" onclick="showTab('t6',this)">⑥ ECR 이미지 Pull</button>
+  </div>
+
+  <!-- TAB 1 -->
+  <div id="t1" class="tab-content active">
+    <div class="flow-box">Pod (10.0.10.5) → Node eth0 → iptables SNAT → VPC Route Table → NAT GW (EIP) → IGW → Internet → (역방향 동일)</div>
+    <div class="step-row"><div class="step-num">1</div><div class="step-body"><div class="step-title">Pod가 패킷 생성</div><div class="step-desc">src=10.0.10.5(Pod IP), dst=142.250.x.x(Google). AWS VPC CNI 덕분에 Pod가 VPC IP를 직접 보유 — veth pair로 Node의 네트워크 네임스페이스와 연결됨.</div></div></div>
+    <div class="step-row"><div class="step-num">2</div><div class="step-body"><div class="step-title">Node의 iptables 통과</div><div class="step-desc">kube-proxy가 관리하는 iptables POSTROUTING 체인에서 SNAT 적용. src가 Node IP(10.0.10.x)로 마스커레이드. 단, VPC CNI는 Pod IP를 직접 ENI에 할당하므로 SNAT 없이 그대로 나가는 경우도 있음 (externalTrafficPolicy 설정에 따라 다름).</div></div></div>
+    <div class="step-row"><div class="step-num">3</div><div class="step-body"><div class="step-title">Private Route Table 조회</div><div class="step-desc">0.0.0.0/0 → NAT Gateway 규칙 매칭. NAT GW는 Public Subnet(AZ-a)에 위치. Private → Public으로 넘어가는 시점.</div></div></div>
+    <div class="step-row"><div class="step-num">4</div><div class="step-body"><div class="step-title">NAT Gateway에서 SNAT</div><div class="step-desc">src를 EIP(고정 공인IP)로 변환. Connection Table에 (사설IP, 포트) ↔ (EIP, 포트) 매핑 저장. 인터넷에서는 EIP만 보임.</div></div></div>
+    <div class="step-row"><div class="step-num">5</div><div class="step-body"><div class="step-title">IGW 통과 → 인터넷</div><div class="step-desc">IGW는 EIP ↔ Private IP 1:1 NAT만 담당. NAT GW의 SNAT 후에는 IGW가 별도 변환 없이 라우팅만 수행.</div></div></div>
+    <div class="step-row"><div class="step-num">6</div><div class="step-body"><div class="step-title">응답 역방향</div><div class="step-desc">Google → EIP → NAT GW (Connection Table 역조회) → Node → iptables DNAT → Pod. 비동기 UDP라면 연결 추적이 없어 응답이 드롭될 수 있음 (stateful 방화벽 개념).</div></div></div>
+    <div class="interview-box">💬 면접 포인트: "NAT Gateway와 IGW의 차이?" — IGW는 1:1 정적 NAT(EIP 직접 부착된 리소스용), NAT GW는 다대일 동적 SNAT(여러 Private 리소스 공유). Private Subnet에서 퍼블릭 IP 없이 인터넷 아웃바운드가 가능한 이유가 바로 NAT GW의 SNAT.</div>
+  </div>
+
+  <!-- TAB 2 -->
+  <div id="t2" class="tab-content">
+    <div class="flow-box">User → DNS → ALB (Public Subnet) → Target Group → Node Port → iptables DNAT → Pod</div>
+    <div class="step-row"><div class="step-num">1</div><div class="step-body"><div class="step-title">DNS 조회</div><div class="step-desc">ALB의 DNS 이름(xxx.ap-northeast-2.elb.amazonaws.com)을 조회하면 Public Subnet의 ALB 노드 IP 반환. Route53 + ALIAS 레코드를 쓰면 ALB IP 변경에 자동 대응.</div></div></div>
+    <div class="step-row"><div class="step-num">2</div><div class="step-body"><div class="step-title">ALB에서 헬스체크 & 라우팅</div><div class="step-desc">ALB는 Listener Rule(path, host 기반)으로 Target Group 선택. Target Group에 등록된 Node IP:NodePort로 포워딩. Ingress Controller(aws-load-balancer-controller)가 K8s Ingress 오브젝트를 보고 ALB 규칙 자동 생성.</div></div></div>
+    <div class="step-row"><div class="step-num">3</div><div class="step-body"><div class="step-title">Security Group 통과</div><div class="step-desc">ALB SG → Node SG 인바운드 허용 필수. EKS는 클러스터 SG를 자동 관리하지만, ALB → Node 포트 범위(30000-32767 NodePort 또는 직접 Pod IP 타입)는 명시적 허용 필요.</div></div></div>
+    <div class="step-row"><div class="step-num">4</div><div class="step-body"><div class="step-title">Node → Pod DNAT (kube-proxy)</div><div class="step-desc">Node의 iptables PREROUTING 체인에서 NodePort를 Pod IP:ContainerPort로 DNAT. Service의 ClusterIP도 동일하게 iptables가 처리. IPVS 모드라면 iptables 대신 Linux IPVS 테이블.</div></div></div>
+    <div class="step-row"><div class="step-num">5</div><div class="step-body"><div class="step-title">externalTrafficPolicy 분기</div><div class="step-desc"><span class="tag tag-warn">Cluster(기본)</span> 어느 Node에 도달해도 다른 Node의 Pod로 2홉 가능. src IP가 Node IP로 SNAT되어 Pod에선 클라이언트 원본 IP 소실.<br><br><span class="tag tag-ok">Local</span> 해당 Node에 Pod가 없으면 드롭. 대신 원본 IP 보존. ALB + externalTrafficPolicy=Local 조합이 클라이언트 IP 보존의 실무 표준.</div></div></div>
+    <div class="interview-box">💬 면접 포인트: "클라이언트 IP를 Pod에서 어떻게 확인하나?" — externalTrafficPolicy=Local + ALB에서 X-Forwarded-For 헤더. 또는 ALB target-type=ip 모드(Pod IP 직접 타겟)로 SNAT 없이 직접 전달.</div>
+  </div>
+
+  <!-- TAB 3 -->
+  <div id="t3" class="tab-content">
+    <div class="flow-box">Pod-A (10.0.10.5) → Service ClusterIP (10.96.0.1) → iptables DNAT → Pod-B (10.0.11.8)</div>
+    <div class="step-row"><div class="step-num">1</div><div class="step-body"><div class="step-title">CoreDNS로 서비스 이름 조회</div><div class="step-desc">Pod-A에서 curl http://my-svc.default.svc.cluster.local. /etc/resolv.conf의 nameserver가 CoreDNS ClusterIP(보통 10.96.0.10). CoreDNS가 K8s API를 watch하며 Service ↔ ClusterIP 매핑 관리.</div></div></div>
+    <div class="step-row"><div class="step-num">2</div><div class="step-body"><div class="step-title">ClusterIP → Pod IP DNAT</div><div class="step-desc">패킷 dst가 ClusterIP(가상 IP)이면 iptables의 KUBE-SERVICES 체인이 랜덤하게 Endpoint(실제 Pod IP) 중 하나를 선택해 DNAT. ClusterIP는 실제 인터페이스에 없는 가상 주소.</div></div></div>
+    <div class="step-row"><div class="step-num">3</div><div class="step-body"><div class="step-title">크로스 노드 통신 (같은 VPC)</div><div class="step-desc">AWS VPC CNI는 Pod에 실제 VPC IP를 부여. 따라서 Pod-A(AZ-a) → Pod-B(AZ-c) 통신이 오버레이(VXLAN) 없이 VPC 라우팅으로 직접 가능. Flannel/Calico와 달리 캡슐화 오버헤드 없음.</div></div></div>
+    <div class="step-row"><div class="step-num">4</div><div class="step-body"><div class="step-title">Network Policy 적용 시점</div><div class="step-desc">VPC CNI에 Network Policy 지원 추가(2023). Pod 단위 인/아웃바운드 제어. iptables 또는 eBPF 기반. 기본은 모두 허용이므로 실무에서 Deny-all + 필요한 것만 허용하는 패턴 필수.</div></div></div>
+    <div class="interview-box">💬 면접 포인트: "Kubernetes에서 Service를 거치지 않고 Pod IP로 직접 통신하면 어떤 문제가 생기나?" — Pod IP는 재시작 시 변경. Service는 안정적인 가상 IP + DNS 이름 제공. 또한 iptables 로드밸런싱, readiness probe 기반 엔드포인트 제어가 Service를 통해서만 동작.</div>
+  </div>
+
+  <!-- TAB 4 -->
+  <div id="t4" class="tab-content">
+    <div class="flow-box">Lens(로컬) → kubeconfig 읽기 → EKS API Server (퍼블릭 엔드포인트) → K8s API → etcd → 응답</div>
+    <div class="step-row"><div class="step-num">1</div><div class="step-body"><div class="step-title">kubeconfig의 역할</div><div class="step-desc">~/.kube/config에 저장된 clusters[].server = EKS API Server URL(https://xxx.gr7.ap-northeast-2.eks.amazonaws.com). Lens는 이 파일을 읽어 어느 클러스터에 연결할지 결정.</div></div></div>
+    <div class="step-row"><div class="step-num">2</div><div class="step-body"><div class="step-title">IAM 인증 (Webhook Token)</div><div class="step-desc">EKS의 users[].exec에 aws eks get-token 명령이 지정됨. Lens가 kubectl과 동일하게 이 명령을 실행 → AWS STS에서 임시 토큰 발급 → Authorization: Bearer {token} 헤더로 API Server 전송. <span class="tag tag-info">aws-iam-authenticator</span> 또는 <span class="tag tag-info">aws eks get-token</span> 두 방식 모두 지원.</div></div></div>
+    <div class="step-row"><div class="step-num">3</div><div class="step-body"><div class="step-title">endpoint_public_access = true 덕분</div><div class="step-desc">Terraform 설정에서 endpoint_public_access=true로 EKS API Server가 인터넷에서 접근 가능한 퍼블릭 엔드포인트를 가짐. 이게 없으면 VPN/Bastion 없이 로컬에서 Lens 사용 불가.</div></div></div>
+    <div class="step-row"><div class="step-num">4</div><div class="step-body"><div class="step-title">K8s RBAC 인가</div><div class="step-desc">토큰 검증 후 aws-auth ConfigMap이 IAM ARN → K8s 사용자/그룹 매핑. system:masters 그룹이면 cluster-admin ClusterRoleBinding으로 모든 리소스 조회 가능 → Lens에 Node/Pod 목록이 표시되는 것.</div></div></div>
+    <div class="step-row"><div class="step-num">5</div><div class="step-body"><div class="step-title">API Server가 etcd에서 조회</div><div class="step-desc">kubectl/Lens의 GET /api/v1/nodes → API Server가 etcd에서 Node 오브젝트 목록 반환. 실시간 상태(CPU/메모리)는 metrics-server가 kubelet에서 수집해 Metrics API(/apis/metrics.k8s.io)로 제공.</div></div></div>
+    <div class="interview-box">💬 면접 포인트: "EKS API Server에 IP 제한 없이 퍼블릭으로 열어두는 것의 보안 리스크는?" — 브루트포스 토큰 공격 가능성. 운영 환경에서는 public_access_cidrs로 회사 IP/CIDR만 허용하거나 endpoint_public_access=false + VPN/Bastion 구성이 Best Practice.</div>
+  </div>
+
+  <!-- TAB 5 -->
+  <div id="t5" class="tab-content">
+    <div class="flow-box">kubectl 명령 → kubeconfig 파싱 → aws eks get-token → STS → API Server → RBAC → etcd/kubelet</div>
+    <div class="step-row"><div class="step-num">1</div><div class="step-body"><div class="step-title">aws eks update-kubeconfig가 하는 일</div><div class="step-desc">AWS API로 클러스터 메타데이터 조회 → ~/.kube/config에 context/cluster/user 섹션 자동 추가. user.exec에 aws eks get-token --cluster-name ... 명령을 삽입해 매 요청마다 토큰 자동 갱신.</div></div></div>
+    <div class="step-row"><div class="step-num">2</div><div class="step-body"><div class="step-title">STS Presigned URL 기반 토큰</div><div class="step-desc">get-token은 STS GetCallerIdentity API의 Presigned URL을 Base64 인코딩한 값. 유효기간 15분. API Server의 Webhook Authenticator가 이 URL을 호출해 IAM 자격증명 검증. 즉 쿠버네티스 자체 사용자 DB가 없고 AWS IAM이 인증 백엔드.</div></div></div>
+    <div class="step-row"><div class="step-num">3</div><div class="step-body"><div class="step-title">다중 컨텍스트 관리</div><div class="step-desc">~/.kube/config에 minikube + EKS 컨텍스트가 공존. kubectl config use-context로 전환. 실수 방지를 위해 KUBECONFIG 환경변수로 파일 분리 관리하는 패턴도 많이 사용.</div></div></div>
+    <div class="step-row"><div class="step-num">4</div><div class="step-body"><div class="step-title">endpoint_private_access = true의 이유</div><div class="step-desc">Worker Node → API Server 통신. Node는 Private Subnet에 있으므로 인터넷을 거치지 않고 VPC 내부 프라이빗 엔드포인트로 직접 통신. 없으면 Node의 kubelet, kube-proxy가 API Server에 접근하려고 NAT GW를 거쳐 퍼블릭 인터넷을 경유 → 지연 + 비용 발생.</div></div></div>
+    <div class="interview-box">💬 면접 포인트: "EKS 클러스터 삭제 후 재생성하면 kubeconfig를 다시 설정해야 하는 이유?" — API Server 엔드포인트 URL이 변경되고 인증 토큰도 새 클러스터 기준으로 재발급 필요. CI/CD 파이프라인에서도 클러스터 재생성 시 kubeconfig 갱신 스텝이 필수.</div>
+  </div>
+
+  <!-- TAB 6 -->
+  <div id="t6" class="tab-content">
+    <div class="flow-box">kubelet → ECR (amazonaws.com) → NAT GW → IGW → ECR API → 이미지 레이어 스트리밍 → Node 로컬 저장</div>
+    <div class="step-row"><div class="step-num">1</div><div class="step-body"><div class="step-title">왜 NAT GW가 필요한가</div><div class="step-desc">Worker Node는 Private Subnet에 위치 → 퍼블릭 IP 없음. ECR 엔드포인트(xxx.dkr.ecr.ap-northeast-2.amazonaws.com)는 퍼블릭 DNS. 따라서 NAT GW를 거쳐야 이미지 Pull 가능. NAT GW 없으면 ImagePullBackOff 에러.</div></div></div>
+    <div class="step-row"><div class="step-num">2</div><div class="step-body"><div class="step-title">IAM 인증 (ECR Login)</div><div class="step-desc">NodeGroup IAM Role에 AmazonEC2ContainerRegistryReadOnly 정책 필요. kubelet이 ecr:GetAuthorizationToken API를 호출해 12시간짜리 Docker 로그인 토큰 획득 → 이미지 Pull. 이 정책이 depends_on에 포함된 이유.</div></div></div>
+    <div class="step-row"><div class="step-num">3</div><div class="step-body"><div class="step-title">비용 최적화: VPC Endpoint</div><div class="step-desc">ECR용 VPC Interface Endpoint(PrivateLink) 설정 시 NAT GW를 거치지 않고 VPC 내부에서 ECR 직접 접근. NAT GW 데이터 처리 비용($0.045/GB) 절감. 대용량 이미지를 자주 pull하는 프로덕션에서는 필수 고려.</div></div></div>
+    <div class="step-row"><div class="step-num">4</div><div class="step-body"><div class="step-title">이미지 캐시 & 레이어 공유</div><div class="step-desc">동일 Node에서 같은 베이스 이미지(node:18-alpine 등) 레이어는 재다운로드 없이 재사용. Pod 재시작이 빠른 이유. 단, Node 교체(Rolling Update, Spot 회수) 시 새 Node에서 다시 Pull 발생 — 이미지 크기를 최소화(멀티스테이지 빌드)해야 하는 이유.</div></div></div>
+    <div class="interview-box">💬 면접 포인트: "이미지 Pull이 느려서 Pod 시작이 지연되는 문제를 어떻게 해결하나?" — ① VPC Endpoint로 NAT 우회 ② 이미지 레이어 최소화 ③ Node AMI에 이미지 사전 포함(pre-baking) ④ 같은 리전 ECR 사용(크로스 리전 Pull 금지) ⑤ imagePullPolicy=IfNotPresent로 캐시 활용.</div>
+  </div>
+
+  <script>
+    function showTab(id, btn) {
+      document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+      document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
+      document.getElementById(id).classList.add('active');
+      btn.classList.add('active');
+    }
+  </script>
+</body>
+</html>
