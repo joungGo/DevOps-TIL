@@ -74,7 +74,7 @@
 		{"id":"4576e40c5b5f82e7","type":"file","file":"Linux/📚이론/단어 카드/컨테이너 종류.md","x":4712,"y":-804,"width":400,"height":863},
 		{"id":"20042bc1d57c0b24","type":"file","file":"Linux/📚이론/단어 카드/네임 스페이스 종류.md","x":5232,"y":-688,"width":400,"height":1367},
 		{"id":"6b0aad6528857aa0","type":"text","text":"### 컨테이너란?\n\n독립된 네임스페이스를 가지고 다른 프로세스와 실행 환경이 나뉘는 하나 또는 여러 프로세스","x":4160,"y":-910,"width":392,"height":106,"color":"3"},
-		{"id":"a92688dafced9541","type":"file","file":"💻 면접 대비 꼬리 질문/리눅스/멀티스레딩과 멀티프로세싱 환경에서 각각의 메모리 관리 방식과 장애 전파 특성을 상세히 설명하세요..md","x":2400,"y":-1520,"width":400,"height":1331},
+		{"id":"a92688dafced9541","type":"file","file":"💬F-LAB/💻 면접 대비 꼬리 질문/리눅스/멀티스레딩과 멀티프로세싱 환경에서 각각의 메모리 관리 방식과 장애 전파 특성을 상세히 설명하세요..md","x":2400,"y":-1520,"width":400,"height":1331},
 		{"id":"382a07934afd32a0","type":"text","text":"쉘(Shell)","x":-2527,"y":102,"width":104,"height":60,"color":"1"},
 		{"id":"fda3e5b831ae9b07","type":"text","text":"Btrfs","x":1760,"y":5190,"width":78,"height":60,"color":"2"},
 		{"id":"a146f0692d581a8e","type":"file","file":"Linux/📚이론/단어 카드/Btrfs - 스냅샷.md","x":1940,"y":5019,"width":400,"height":400},
