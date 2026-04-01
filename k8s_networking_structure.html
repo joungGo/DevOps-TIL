@@ -1,0 +1,531 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>K8s 네트워킹 구조</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; background: #f8f8f6; color: #1a1a18; padding: 20px 16px; }
+    h1 { font-size: 16px; font-weight: 600; margin-bottom: 14px; }
+    .tb { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 12px; }
+    .tb button {
+      padding: 6px 13px; border: 1px solid #d3d1c7; border-radius: 5px;
+      background: #fff; color: #6b6b66; font-size: 12px; cursor: pointer;
+      font-family: inherit; transition: all .15s;
+    }
+    .tb button:hover { border-color: #888780; color: #1a1a18; }
+    .tb button.on { background: #e6f1fb; color: #185fa5; border-color: #85b7eb; font-weight: 500; }
+    .panel { display: none; }
+    .panel.on { display: block; }
+    svg { display: block; width: 100%; }
+    .nb { cursor: pointer; }
+    .nb:hover > rect { opacity: 0.82; }
+    .tip {
+      margin-top: 10px; padding: 10px 14px;
+      background: #f1efe8; border: 1px solid #d3d1c7;
+      border-radius: 6px; font-size: 12px; color: #5f5e5a;
+      line-height: 1.7; min-height: 44px;
+    }
+    .tip strong { color: #1a1a18; font-weight: 600; }
+    @media (prefers-color-scheme: dark) {
+      body { background: #1e1e1c; color: #d4d2c8; }
+      h1 { color: #d4d2c8; }
+      .tb button { background: #2c2c2a; color: #888780; border-color: #444441; }
+      .tb button:hover { border-color: #888780; color: #d4d2c8; }
+      .tb button.on { background: #0c447c; color: #b5d4f4; border-color: #185fa5; }
+      .tip { background: #2c2c2a; border-color: #444441; color: #888780; }
+      .tip strong { color: #d4d2c8; }
+    }
+  </style>
+</head>
+<body>
+  <h1>K8s 네트워킹 구조</h1>
+
+  <div class="tb">
+    <button class="on" onclick="sw(0,this)">Service 타입</button>
+    <button onclick="sw(1,this)">Namespace</button>
+    <button onclick="sw(2,this)">CoreDNS</button>
+    <button onclick="sw(3,this)">kube-proxy</button>
+    <button onclick="sw(4,this)">VPC CNI</button>
+    <button onclick="sw(5,this)">NetworkPolicy</button>
+    <button onclick="sw(6,this)">Addon 전체</button>
+  </div>
+
+  <!-- ── Panel 0: Service 타입 ── -->
+  <div class="panel on" id="p0">
+  <svg viewBox="0 0 680 310" xmlns="http://www.w3.org/2000/svg">
+    <defs><marker id="a0" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse"><path d="M2 1L8 5L2 9" fill="none" stroke="context-stroke" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></marker></defs>
+    <g class="nb" onclick="tt('ClusterIP (기본값)','클러스터 내부에서만 접근 가능한 가상 IP. 실제 인터페이스 없음. kube-proxy iptables가 ClusterIP → Pod IP로 DNAT. Pod 간 통신의 표준 방법. DNS: my-svc.namespace.svc.cluster.local')">
+      <rect x="10" y="8" width="152" height="290" rx="8" fill="#E6F1FB" stroke="#185FA5" stroke-width="0.5"/>
+      <text font-family="inherit" font-size="11" font-weight="500" fill="#0C447C" x="86" y="26" text-anchor="middle" dominant-baseline="central">ClusterIP</text>
+      <text font-family="inherit" font-size="9" fill="#185FA5" x="86" y="42" text-anchor="middle" dominant-baseline="central">클러스터 내부 전용</text>
+      <rect x="24" y="58" width="124" height="26" rx="4" fill="#B5D4F4" stroke="#185FA5" stroke-width="0.3"/>
+      <text font-family="inherit" font-size="9" fill="#0C447C" x="86" y="71" text-anchor="middle" dominant-baseline="central">Pod-A (10.0.10.11)</text>
+      <rect x="24" y="92" width="124" height="26" rx="4" fill="#B5D4F4" stroke="#185FA5" stroke-width="0.3"/>
+      <text font-family="inherit" font-size="9" fill="#0C447C" x="86" y="105" text-anchor="middle" dominant-baseline="central">Pod-B (10.0.11.8)</text>
+      <rect x="24" y="134" width="124" height="30" rx="5" fill="#E6F1FB" stroke="#185FA5" stroke-width="0.5"/>
+      <text font-family="inherit" font-size="9" fill="#0C447C" x="86" y="146" text-anchor="middle" dominant-baseline="central">ClusterIP</text>
+      <text font-family="inherit" font-size="9" fill="#185FA5" x="86" y="158" text-anchor="middle" dominant-baseline="central">10.96.0.1 (가상)</text>
+      <line x1="86" y1="84" x2="86" y2="134" stroke="#185FA5" stroke-width="1" stroke-dasharray="3 2" marker-end="url(#a0)"/>
+      <text font-family="inherit" font-size="9" fill="#185FA5" x="86" y="190" text-anchor="middle" dominant-baseline="central">외부 접근 불가</text>
+      <text font-family="inherit" font-size="9" fill="#185FA5" x="86" y="206" text-anchor="middle" dominant-baseline="central">Pod 간 통신 표준</text>
+      <text font-family="inherit" font-size="9" fill="#185FA5" x="86" y="222" text-anchor="middle" dominant-baseline="central">로드밸런싱 포함</text>
+      <text font-family="inherit" font-size="9" fill="#185FA5" x="86" y="238" text-anchor="middle" dominant-baseline="central">DNS 이름 제공</text>
+    </g>
+    <g class="nb" onclick="tt('NodePort','모든 Node의 특정 포트(30000-32767)를 열어서 외부 접근 허용. ClusterIP를 포함(NodePort = ClusterIP + 포트 개방). externalTrafficPolicy=Local이면 원본 IP 보존.')">
+      <rect x="176" y="8" width="152" height="290" rx="8" fill="#EAF3DE" stroke="#3B6D11" stroke-width="0.5"/>
+      <text font-family="inherit" font-size="11" font-weight="500" fill="#27500A" x="252" y="26" text-anchor="middle" dominant-baseline="central">NodePort</text>
+      <text font-family="inherit" font-size="9" fill="#3B6D11" x="252" y="42" text-anchor="middle" dominant-baseline="central">Node IP + 포트로 접근</text>
+      <rect x="190" y="58" width="124" height="26" rx="4" fill="#C0DD97" stroke="#3B6D11" stroke-width="0.3"/>
+      <text font-family="inherit" font-size="9" fill="#27500A" x="252" y="71" text-anchor="middle" dominant-baseline="central">외부 클라이언트</text>
+      <line x1="252" y1="84" x2="252" y2="100" stroke="#3B6D11" stroke-width="1" marker-end="url(#a0)"/>
+      <rect x="190" y="100" width="124" height="30" rx="5" fill="#EAF3DE" stroke="#3B6D11" stroke-width="0.5"/>
+      <text font-family="inherit" font-size="9" fill="#27500A" x="252" y="112" text-anchor="middle" dominant-baseline="central">Node IP:30080</text>
+      <text font-family="inherit" font-size="9" fill="#3B6D11" x="252" y="124" text-anchor="middle" dominant-baseline="central">포트 범위: 30000-32767</text>
+      <line x1="252" y1="130" x2="252" y2="146" stroke="#3B6D11" stroke-width="1" marker-end="url(#a0)"/>
+      <rect x="190" y="146" width="124" height="26" rx="4" fill="#C0DD97" stroke="#3B6D11" stroke-width="0.3"/>
+      <text font-family="inherit" font-size="9" fill="#27500A" x="252" y="159" text-anchor="middle" dominant-baseline="central">ClusterIP (내부 포함)</text>
+      <line x1="252" y1="172" x2="252" y2="188" stroke="#3B6D11" stroke-width="1" marker-end="url(#a0)"/>
+      <rect x="190" y="188" width="124" height="26" rx="4" fill="#C0DD97" stroke="#3B6D11" stroke-width="0.3"/>
+      <text font-family="inherit" font-size="9" fill="#27500A" x="252" y="201" text-anchor="middle" dominant-baseline="central">Pod</text>
+      <text font-family="inherit" font-size="9" fill="#3B6D11" x="252" y="238" text-anchor="middle" dominant-baseline="central">LoadBalancer 없어도 됨</text>
+      <text font-family="inherit" font-size="9" fill="#3B6D11" x="252" y="254" text-anchor="middle" dominant-baseline="central">테스트/개발 환경 적합</text>
+    </g>
+    <g class="nb" onclick="tt('LoadBalancer','클라우드 LB(ALB/NLB)를 자동 생성. NodePort + ClusterIP를 모두 포함. EKS에서는 aws-load-balancer-controller가 ALB/NLB 자동 생성. Service type=LoadBalancer → NLB, Ingress → ALB.')">
+      <rect x="342" y="8" width="152" height="290" rx="8" fill="#FAEEDA" stroke="#854F0B" stroke-width="0.5"/>
+      <text font-family="inherit" font-size="11" font-weight="500" fill="#633806" x="418" y="26" text-anchor="middle" dominant-baseline="central">LoadBalancer</text>
+      <text font-family="inherit" font-size="9" fill="#854F0B" x="418" y="42" text-anchor="middle" dominant-baseline="central">클라우드 LB 자동 생성</text>
+      <rect x="356" y="58" width="124" height="26" rx="4" fill="#FAC775" stroke="#854F0B" stroke-width="0.3"/>
+      <text font-family="inherit" font-size="9" fill="#633806" x="418" y="71" text-anchor="middle" dominant-baseline="central">외부 클라이언트</text>
+      <line x1="418" y1="84" x2="418" y2="100" stroke="#854F0B" stroke-width="1" marker-end="url(#a0)"/>
+      <rect x="356" y="100" width="124" height="26" rx="5" fill="#FAEEDA" stroke="#854F0B" stroke-width="0.5"/>
+      <text font-family="inherit" font-size="9" fill="#633806" x="418" y="113" text-anchor="middle" dominant-baseline="central">ALB / NLB</text>
+      <line x1="418" y1="126" x2="418" y2="142" stroke="#854F0B" stroke-width="1" marker-end="url(#a0)"/>
+      <rect x="356" y="142" width="124" height="26" rx="4" fill="#FAC775" stroke="#854F0B" stroke-width="0.3"/>
+      <text font-family="inherit" font-size="9" fill="#633806" x="418" y="155" text-anchor="middle" dominant-baseline="central">NodePort</text>
+      <line x1="418" y1="168" x2="418" y2="184" stroke="#854F0B" stroke-width="1" marker-end="url(#a0)"/>
+      <rect x="356" y="184" width="124" height="26" rx="4" fill="#FAC775" stroke="#854F0B" stroke-width="0.3"/>
+      <text font-family="inherit" font-size="9" fill="#633806" x="418" y="197" text-anchor="middle" dominant-baseline="central">ClusterIP</text>
+      <line x1="418" y1="210" x2="418" y2="226" stroke="#854F0B" stroke-width="1" marker-end="url(#a0)"/>
+      <rect x="356" y="226" width="124" height="26" rx="4" fill="#FAC775" stroke="#854F0B" stroke-width="0.3"/>
+      <text font-family="inherit" font-size="9" fill="#633806" x="418" y="239" text-anchor="middle" dominant-baseline="central">Pod</text>
+      <text font-family="inherit" font-size="9" fill="#854F0B" x="418" y="275" text-anchor="middle" dominant-baseline="central">EKS 실무 표준</text>
+    </g>
+    <g class="nb" onclick="tt('ExternalName &amp; Headless','ExternalName: 외부 DNS 이름을 K8s Service 이름으로 매핑. 외부 DB를 클러스터 내부 이름으로 접근할 때 사용. Headless(ClusterIP=None): LB 없이 Pod IP 직접 반환. StatefulSet DB 클러스터 내부 통신에 사용.')">
+      <rect x="508" y="8" width="164" height="290" rx="8" fill="#EEEDFE" stroke="#534AB7" stroke-width="0.5"/>
+      <text font-family="inherit" font-size="11" font-weight="500" fill="#3C3489" x="590" y="26" text-anchor="middle" dominant-baseline="central">ExternalName / Headless</text>
+      <rect x="522" y="52" width="136" height="100" rx="6" fill="#CECBF6" stroke="#534AB7" stroke-width="0.3"/>
+      <text font-family="inherit" font-size="10" font-weight="500" fill="#3C3489" x="590" y="70" text-anchor="middle" dominant-baseline="central">ExternalName</text>
+      <text font-family="inherit" font-size="9" fill="#534AB7" x="590" y="88" text-anchor="middle" dominant-baseline="central">my-db.svc →</text>
+      <text font-family="inherit" font-size="9" fill="#534AB7" x="590" y="104" text-anchor="middle" dominant-baseline="central">rds.amazonaws.com</text>
+      <text font-family="inherit" font-size="9" fill="#534AB7" x="590" y="120" text-anchor="middle" dominant-baseline="central">외부 DNS 이름 매핑</text>
+      <text font-family="inherit" font-size="9" fill="#534AB7" x="590" y="136" text-anchor="middle" dominant-baseline="central">ClusterIP 없음</text>
+      <rect x="522" y="168" width="136" height="100" rx="6" fill="#CECBF6" stroke="#534AB7" stroke-width="0.3"/>
+      <text font-family="inherit" font-size="10" font-weight="500" fill="#3C3489" x="590" y="186" text-anchor="middle" dominant-baseline="central">Headless</text>
+      <text font-family="inherit" font-size="9" fill="#534AB7" x="590" y="204" text-anchor="middle" dominant-baseline="central">clusterIP: None</text>
+      <text font-family="inherit" font-size="9" fill="#534AB7" x="590" y="220" text-anchor="middle" dominant-baseline="central">Pod IP 직접 반환</text>
+      <text font-family="inherit" font-size="9" fill="#534AB7" x="590" y="236" text-anchor="middle" dominant-baseline="central">StatefulSet DB용</text>
+      <text font-family="inherit" font-size="9" fill="#534AB7" x="590" y="252" text-anchor="middle" dominant-baseline="central">LB 없음</text>
+    </g>
+  </svg>
+  </div>
+
+  <!-- ── Panel 1: Namespace ── -->
+  <div class="panel" id="p1">
+  <svg viewBox="0 0 680 310" xmlns="http://www.w3.org/2000/svg">
+    <g class="nb" onclick="tt('kube-system Namespace','K8s 시스템 컴포넌트가 위치. coredns, kube-proxy, aws-node(VPC CNI), metrics-server 등. 함부로 수정하면 클러스터 전체에 영향. 일반 앱 배포 금지.')">
+      <rect x="10" y="8" width="196" height="290" rx="8" fill="#FAECE7" stroke="#993C1D" stroke-width="0.5"/>
+      <text font-family="inherit" font-size="11" font-weight="500" fill="#712B13" x="108" y="26" text-anchor="middle" dominant-baseline="central">kube-system</text>
+      <text font-family="inherit" font-size="9" fill="#993C1D" x="108" y="42" text-anchor="middle" dominant-baseline="central">K8s 시스템 컴포넌트</text>
+      <rect x="24" y="56" width="168" height="26" rx="4" fill="#F5C4B3" stroke="#993C1D" stroke-width="0.3"/>
+      <text font-family="inherit" font-size="9" fill="#712B13" x="108" y="69" text-anchor="middle" dominant-baseline="central">coredns Pod</text>
+      <rect x="24" y="88" width="168" height="26" rx="4" fill="#F5C4B3" stroke="#993C1D" stroke-width="0.3"/>
+      <text font-family="inherit" font-size="9" fill="#712B13" x="108" y="101" text-anchor="middle" dominant-baseline="central">kube-proxy Pod (각 Node당)</text>
+      <rect x="24" y="120" width="168" height="26" rx="4" fill="#F5C4B3" stroke="#993C1D" stroke-width="0.3"/>
+      <text font-family="inherit" font-size="9" fill="#712B13" x="108" y="133" text-anchor="middle" dominant-baseline="central">aws-node Pod (VPC CNI)</text>
+      <rect x="24" y="152" width="168" height="26" rx="4" fill="#F5C4B3" stroke="#993C1D" stroke-width="0.3"/>
+      <text font-family="inherit" font-size="9" fill="#712B13" x="108" y="165" text-anchor="middle" dominant-baseline="central">metrics-server Pod</text>
+      <rect x="24" y="184" width="168" height="26" rx="4" fill="#F5C4B3" stroke="#993C1D" stroke-width="0.3"/>
+      <text font-family="inherit" font-size="9" fill="#712B13" x="108" y="197" text-anchor="middle" dominant-baseline="central">aws-load-balancer-controller</text>
+      <text font-family="inherit" font-size="9" fill="#993C1D" x="108" y="236" text-anchor="middle" dominant-baseline="central">수정 금지 영역</text>
+      <text font-family="inherit" font-size="9" fill="#993C1D" x="108" y="252" text-anchor="middle" dominant-baseline="central">앱 배포 금지</text>
+    </g>
+    <g class="nb" onclick="tt('default Namespace','Namespace를 지정하지 않으면 기본 배포 위치. 테스트 목적으로는 OK. 운영 환경에서는 앱별 별도 Namespace 권장. ResourceQuota, LimitRange로 리소스 제한 가능.')">
+      <rect x="218" y="8" width="140" height="290" rx="8" fill="#E1F5EE" stroke="#0F6E56" stroke-width="0.5"/>
+      <text font-family="inherit" font-size="11" font-weight="500" fill="#085041" x="288" y="26" text-anchor="middle" dominant-baseline="central">default</text>
+      <text font-family="inherit" font-size="9" fill="#0F6E56" x="288" y="42" text-anchor="middle" dominant-baseline="central">기본 Namespace</text>
+      <rect x="232" y="56" width="112" height="26" rx="4" fill="#9FE1CB" stroke="#0F6E56" stroke-width="0.3"/>
+      <text font-family="inherit" font-size="9" fill="#085041" x="288" y="69" text-anchor="middle" dominant-baseline="central">url-shortener Pod</text>
+      <rect x="232" y="88" width="112" height="26" rx="4" fill="#9FE1CB" stroke="#0F6E56" stroke-width="0.3"/>
+      <text font-family="inherit" font-size="9" fill="#085041" x="288" y="101" text-anchor="middle" dominant-baseline="central">Service</text>
+      <text font-family="inherit" font-size="9" fill="#0F6E56" x="288" y="152" text-anchor="middle" dominant-baseline="central">Namespace 미지정 시</text>
+      <text font-family="inherit" font-size="9" fill="#0F6E56" x="288" y="168" text-anchor="middle" dominant-baseline="central">기본 위치</text>
+      <text font-family="inherit" font-size="9" fill="#0F6E56" x="288" y="200" text-anchor="middle" dominant-baseline="central">운영에선 비권장</text>
+    </g>
+    <g class="nb" onclick="tt('커스텀 Namespace','앱/팀/환경별로 논리적 격리. 같은 Namespace 내 Service DNS: my-svc. 다른 Namespace: my-svc.other-ns.svc.cluster.local. RBAC으로 Namespace별 접근 제어. ResourceQuota로 CPU/메모리 제한.')">
+      <rect x="370" y="8" width="300" height="290" rx="8" fill="#EEEDFE" stroke="#534AB7" stroke-width="0.5"/>
+      <text font-family="inherit" font-size="11" font-weight="500" fill="#3C3489" x="520" y="26" text-anchor="middle" dominant-baseline="central">커스텀 Namespace</text>
+      <text font-family="inherit" font-size="9" fill="#534AB7" x="520" y="42" text-anchor="middle" dominant-baseline="central">앱 / 팀 / 환경별 격리</text>
+      <rect x="384" y="56" width="124" height="100" rx="6" fill="#CECBF6" stroke="#534AB7" stroke-width="0.3"/>
+      <text font-family="inherit" font-size="10" font-weight="500" fill="#3C3489" x="446" y="74" text-anchor="middle" dominant-baseline="central">production</text>
+      <rect x="396" y="88" width="100" height="22" rx="3" fill="#AFA9EC" stroke="#534AB7" stroke-width="0.3"/>
+      <text font-family="inherit" font-size="9" fill="#26215C" x="446" y="99" text-anchor="middle" dominant-baseline="central">api Pod</text>
+      <rect x="396" y="116" width="100" height="22" rx="3" fill="#AFA9EC" stroke="#534AB7" stroke-width="0.3"/>
+      <text font-family="inherit" font-size="9" fill="#26215C" x="446" y="127" text-anchor="middle" dominant-baseline="central">frontend Pod</text>
+      <rect x="524" y="56" width="132" height="100" rx="6" fill="#CECBF6" stroke="#534AB7" stroke-width="0.3"/>
+      <text font-family="inherit" font-size="10" font-weight="500" fill="#3C3489" x="590" y="74" text-anchor="middle" dominant-baseline="central">monitoring</text>
+      <rect x="536" y="88" width="108" height="22" rx="3" fill="#AFA9EC" stroke="#534AB7" stroke-width="0.3"/>
+      <text font-family="inherit" font-size="9" fill="#26215C" x="590" y="99" text-anchor="middle" dominant-baseline="central">prometheus Pod</text>
+      <rect x="536" y="116" width="108" height="22" rx="3" fill="#AFA9EC" stroke="#534AB7" stroke-width="0.3"/>
+      <text font-family="inherit" font-size="9" fill="#26215C" x="590" y="127" text-anchor="middle" dominant-baseline="central">grafana Pod</text>
+      <text font-family="inherit" font-size="9" fill="#534AB7" x="520" y="180" text-anchor="middle" dominant-baseline="central">같은 NS: my-svc</text>
+      <text font-family="inherit" font-size="9" fill="#534AB7" x="520" y="196" text-anchor="middle" dominant-baseline="central">다른 NS: my-svc.ns.svc.cluster.local</text>
+      <text font-family="inherit" font-size="9" fill="#534AB7" x="520" y="220" text-anchor="middle" dominant-baseline="central">RBAC 접근 제어</text>
+      <text font-family="inherit" font-size="9" fill="#534AB7" x="520" y="236" text-anchor="middle" dominant-baseline="central">ResourceQuota 리소스 제한</text>
+      <text font-family="inherit" font-size="9" fill="#534AB7" x="520" y="252" text-anchor="middle" dominant-baseline="central">NetworkPolicy 트래픽 격리</text>
+    </g>
+  </svg>
+  </div>
+
+  <!-- ── Panel 2: CoreDNS ── -->
+  <div class="panel" id="p2">
+  <svg viewBox="0 0 680 310" xmlns="http://www.w3.org/2000/svg">
+    <defs><marker id="a2" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse"><path d="M2 1L8 5L2 9" fill="none" stroke="context-stroke" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></marker></defs>
+    <g class="nb" onclick="tt('CoreDNS 역할','K8s 내부 DNS 서버. /etc/resolv.conf의 nameserver = CoreDNS ClusterIP(10.96.0.10). K8s API watching으로 Service/Pod 변경 즉시 반영. kube-system Namespace에 Deployment로 배포.')">
+      <rect x="10" y="8" width="148" height="290" rx="8" fill="#E6F1FB" stroke="#185FA5" stroke-width="0.5"/>
+      <text font-family="inherit" font-size="10" font-weight="500" fill="#0C447C" x="84" y="26" text-anchor="middle" dominant-baseline="central">Pod-A가 호출</text>
+      <rect x="24" y="44" width="120" height="44" rx="5" fill="#B5D4F4" stroke="#185FA5" stroke-width="0.3"/>
+      <text font-family="inherit" font-size="9" fill="#0C447C" x="84" y="60" text-anchor="middle" dominant-baseline="central">curl http://my-svc</text>
+      <text font-family="inherit" font-size="9" fill="#185FA5" x="84" y="76" text-anchor="middle" dominant-baseline="central">.default.svc</text>
+      <text font-family="inherit" font-size="9" fill="#185FA5" x="84" y="108" text-anchor="middle" dominant-baseline="central">/etc/resolv.conf</text>
+      <text font-family="inherit" font-size="9" fill="#185FA5" x="84" y="124" text-anchor="middle" dominant-baseline="central">nameserver</text>
+      <text font-family="inherit" font-size="9" fill="#185FA5" x="84" y="140" text-anchor="middle" dominant-baseline="central">10.96.0.10</text>
+    </g>
+    <line x1="158" y1="100" x2="176" y2="100" stroke="#378ADD" stroke-width="1.5" marker-end="url(#a2)"/>
+    <g class="nb" onclick="tt('CoreDNS 처리','K8s API watching으로 Service 목록 관리. DNS 쿼리 수신 → Service 이름 매칭 → ClusterIP 반환. 없으면 업스트림(AWS Route53)으로 포워딩. search 도메인: default.svc.cluster.local, svc.cluster.local, cluster.local')">
+      <rect x="176" y="8" width="160" height="290" rx="8" fill="#EAF3DE" stroke="#3B6D11" stroke-width="0.5"/>
+      <text font-family="inherit" font-size="10" font-weight="500" fill="#27500A" x="256" y="26" text-anchor="middle" dominant-baseline="central">CoreDNS</text>
+      <text font-family="inherit" font-size="9" fill="#3B6D11" x="256" y="42" text-anchor="middle" dominant-baseline="central">10.96.0.10</text>
+      <rect x="190" y="56" width="132" height="60" rx="5" fill="#C0DD97" stroke="#3B6D11" stroke-width="0.3"/>
+      <text font-family="inherit" font-size="9" fill="#27500A" x="256" y="72" text-anchor="middle" dominant-baseline="central">Service 테이블</text>
+      <text font-family="inherit" font-size="9" fill="#3B6D11" x="256" y="88" text-anchor="middle" dominant-baseline="central">my-svc → 10.96.0.1</text>
+      <text font-family="inherit" font-size="9" fill="#3B6D11" x="256" y="104" text-anchor="middle" dominant-baseline="central">my-db → 10.96.0.2</text>
+      <text font-family="inherit" font-size="9" fill="#3B6D11" x="256" y="138" text-anchor="middle" dominant-baseline="central">K8s API watching</text>
+      <text font-family="inherit" font-size="9" fill="#3B6D11" x="256" y="154" text-anchor="middle" dominant-baseline="central">Service 변경 즉시 반영</text>
+      <text font-family="inherit" font-size="9" fill="#3B6D11" x="256" y="186" text-anchor="middle" dominant-baseline="central">없는 이름이면</text>
+      <text font-family="inherit" font-size="9" fill="#3B6D11" x="256" y="202" text-anchor="middle" dominant-baseline="central">AWS Route53으로 포워딩</text>
+    </g>
+    <line x1="336" y1="100" x2="354" y2="100" stroke="#378ADD" stroke-width="1.5" marker-end="url(#a2)"/>
+    <g class="nb" onclick="tt('ClusterIP 반환 후 처리','CoreDNS에서 ClusterIP(10.96.0.1) 반환 → Pod-A가 dst=10.96.0.1 패킷 생성 → Node의 iptables KUBE-SERVICES 체인 매칭 → 실제 Pod IP로 DNAT → VPC 라우팅으로 목적지 Pod 전달.')">
+      <rect x="354" y="8" width="160" height="290" rx="8" fill="#FAEEDA" stroke="#854F0B" stroke-width="0.5"/>
+      <text font-family="inherit" font-size="10" font-weight="500" fill="#633806" x="434" y="26" text-anchor="middle" dominant-baseline="central">ClusterIP 반환</text>
+      <rect x="368" y="44" width="132" height="32" rx="5" fill="#FAC775" stroke="#854F0B" stroke-width="0.3"/>
+      <text font-family="inherit" font-size="9" fill="#633806" x="434" y="60" text-anchor="middle" dominant-baseline="central">10.96.0.1</text>
+      <line x1="434" y1="76" x2="434" y2="96" stroke="#854F0B" stroke-width="1.2" marker-end="url(#a2)"/>
+      <rect x="368" y="96" width="132" height="32" rx="5" fill="#FAC775" stroke="#854F0B" stroke-width="0.3"/>
+      <text font-family="inherit" font-size="9" fill="#633806" x="434" y="112" text-anchor="middle" dominant-baseline="central">패킷 dst=10.96.0.1</text>
+      <line x1="434" y1="128" x2="434" y2="148" stroke="#854F0B" stroke-width="1.2" marker-end="url(#a2)"/>
+      <rect x="368" y="148" width="132" height="32" rx="5" fill="#FAC775" stroke="#854F0B" stroke-width="0.3"/>
+      <text font-family="inherit" font-size="9" fill="#633806" x="434" y="164" text-anchor="middle" dominant-baseline="central">iptables DNAT</text>
+      <line x1="434" y1="180" x2="434" y2="200" stroke="#854F0B" stroke-width="1.2" marker-end="url(#a2)"/>
+      <rect x="368" y="200" width="132" height="32" rx="5" fill="#FAC775" stroke="#854F0B" stroke-width="0.3"/>
+      <text font-family="inherit" font-size="9" fill="#633806" x="434" y="216" text-anchor="middle" dominant-baseline="central">실제 Pod IP 전달</text>
+    </g>
+    <g class="nb" onclick="tt('DNS 이름 구조','전체: my-svc.default.svc.cluster.local. search 도메인 덕분에 my-svc만 입력해도 자동 완성. 같은 NS면 my-svc 만으로 OK. 다른 NS면 my-svc.other-ns 또는 전체 FQDN 필요. Pod DNS: pod-ip.ns.pod.cluster.local')">
+      <rect x="526" y="8" width="146" height="290" rx="8" fill="#EEEDFE" stroke="#534AB7" stroke-width="0.5"/>
+      <text font-family="inherit" font-size="10" font-weight="500" fill="#3C3489" x="599" y="26" text-anchor="middle" dominant-baseline="central">DNS 이름 구조</text>
+      <rect x="538" y="44" width="122" height="88" rx="5" fill="#CECBF6" stroke="#534AB7" stroke-width="0.3"/>
+      <text font-family="inherit" font-size="9" fill="#3C3489" x="599" y="62" text-anchor="middle" dominant-baseline="central">my-svc</text>
+      <text font-family="inherit" font-size="9" fill="#534AB7" x="599" y="78" text-anchor="middle" dominant-baseline="central">.default</text>
+      <text font-family="inherit" font-size="9" fill="#534AB7" x="599" y="94" text-anchor="middle" dominant-baseline="central">.svc</text>
+      <text font-family="inherit" font-size="9" fill="#534AB7" x="599" y="110" text-anchor="middle" dominant-baseline="central">.cluster.local</text>
+      <text font-family="inherit" font-size="9" fill="#3C3489" x="599" y="154" text-anchor="middle" dominant-baseline="central">같은 NS:</text>
+      <text font-family="inherit" font-size="9" fill="#534AB7" x="599" y="170" text-anchor="middle" dominant-baseline="central">my-svc 만으로 OK</text>
+      <text font-family="inherit" font-size="9" fill="#3C3489" x="599" y="198" text-anchor="middle" dominant-baseline="central">다른 NS:</text>
+      <text font-family="inherit" font-size="9" fill="#534AB7" x="599" y="214" text-anchor="middle" dominant-baseline="central">my-svc.other-ns</text>
+      <text font-family="inherit" font-size="9" fill="#3C3489" x="599" y="246" text-anchor="middle" dominant-baseline="central">외부:</text>
+      <text font-family="inherit" font-size="9" fill="#534AB7" x="599" y="262" text-anchor="middle" dominant-baseline="central">Route53으로 포워딩</text>
+    </g>
+  </svg>
+  </div>
+
+  <!-- ── Panel 3: kube-proxy ── -->
+  <div class="panel" id="p3">
+  <svg viewBox="0 0 680 310" xmlns="http://www.w3.org/2000/svg">
+    <defs><marker id="a3" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse"><path d="M2 1L8 5L2 9" fill="none" stroke="context-stroke" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></marker></defs>
+    <g class="nb" onclick="tt('kube-proxy 역할','각 Node마다 DaemonSet으로 실행. K8s API watching으로 Service/Endpoint 변경 감지 → iptables 규칙 자동 업데이트. ClusterIP → Pod IP DNAT 규칙 관리. iptables 모드(기본) 또는 IPVS 모드 선택 가능.')">
+      <rect x="10" y="8" width="200" height="290" rx="8" fill="#FAECE7" stroke="#993C1D" stroke-width="0.5"/>
+      <text font-family="inherit" font-size="10" font-weight="500" fill="#712B13" x="110" y="26" text-anchor="middle" dominant-baseline="central">kube-proxy 역할</text>
+      <rect x="24" y="44" width="172" height="26" rx="4" fill="#F5C4B3" stroke="#993C1D" stroke-width="0.3"/>
+      <text font-family="inherit" font-size="9" fill="#712B13" x="110" y="57" text-anchor="middle" dominant-baseline="central">각 Node DaemonSet 실행</text>
+      <rect x="24" y="76" width="172" height="26" rx="4" fill="#F5C4B3" stroke="#993C1D" stroke-width="0.3"/>
+      <text font-family="inherit" font-size="9" fill="#712B13" x="110" y="89" text-anchor="middle" dominant-baseline="central">K8s API watching</text>
+      <rect x="24" y="108" width="172" height="26" rx="4" fill="#F5C4B3" stroke="#993C1D" stroke-width="0.3"/>
+      <text font-family="inherit" font-size="9" fill="#712B13" x="110" y="121" text-anchor="middle" dominant-baseline="central">iptables 규칙 자동 업데이트</text>
+      <rect x="24" y="140" width="172" height="26" rx="4" fill="#F5C4B3" stroke="#993C1D" stroke-width="0.3"/>
+      <text font-family="inherit" font-size="9" fill="#712B13" x="110" y="153" text-anchor="middle" dominant-baseline="central">ClusterIP → Pod IP DNAT</text>
+      <text font-family="inherit" font-size="9" fill="#993C1D" x="110" y="196" text-anchor="middle" dominant-baseline="central">iptables 모드 (기본)</text>
+      <text font-family="inherit" font-size="9" fill="#993C1D" x="110" y="212" text-anchor="middle" dominant-baseline="central">IPVS 모드 (고성능)</text>
+    </g>
+    <g class="nb" onclick="tt('iptables 체인 구조','PREROUTING → KUBE-SERVICES: ClusterIP 매칭. KUBE-SVC-xxx: 랜덤 로드밸런싱(확률 기반). KUBE-SEP-xxx: 실제 Pod IP:Port로 DNAT. Service Pod 추가/삭제 시 kube-proxy가 규칙 자동 갱신.')">
+      <rect x="222" y="8" width="216" height="290" rx="8" fill="#EAF3DE" stroke="#3B6D11" stroke-width="0.5"/>
+      <text font-family="inherit" font-size="10" font-weight="500" fill="#27500A" x="330" y="26" text-anchor="middle" dominant-baseline="central">iptables 체인 구조</text>
+      <rect x="236" y="44" width="188" height="24" rx="4" fill="#C0DD97" stroke="#3B6D11" stroke-width="0.3"/>
+      <text font-family="inherit" font-size="9" fill="#27500A" x="330" y="56" text-anchor="middle" dominant-baseline="central">PREROUTING</text>
+      <line x1="330" y1="68" x2="330" y2="80" stroke="#3B6D11" stroke-width="1" marker-end="url(#a3)"/>
+      <rect x="236" y="80" width="188" height="24" rx="4" fill="#C0DD97" stroke="#3B6D11" stroke-width="0.3"/>
+      <text font-family="inherit" font-size="9" fill="#27500A" x="330" y="92" text-anchor="middle" dominant-baseline="central">KUBE-SERVICES (ClusterIP 매칭)</text>
+      <line x1="330" y1="104" x2="330" y2="116" stroke="#3B6D11" stroke-width="1" marker-end="url(#a3)"/>
+      <rect x="236" y="116" width="188" height="24" rx="4" fill="#C0DD97" stroke="#3B6D11" stroke-width="0.3"/>
+      <text font-family="inherit" font-size="9" fill="#27500A" x="330" y="128" text-anchor="middle" dominant-baseline="central">KUBE-SVC-xxx (랜덤 선택)</text>
+      <line x1="294" y1="140" x2="270" y2="156" stroke="#3B6D11" stroke-width="1" marker-end="url(#a3)"/>
+      <line x1="330" y1="140" x2="330" y2="156" stroke="#3B6D11" stroke-width="1" marker-end="url(#a3)"/>
+      <line x1="366" y1="140" x2="390" y2="156" stroke="#3B6D11" stroke-width="1" marker-end="url(#a3)"/>
+      <rect x="236" y="156" width="56" height="36" rx="4" fill="#97C459" stroke="#3B6D11" stroke-width="0.3"/>
+      <text font-family="inherit" font-size="8" fill="#27500A" x="264" y="170" text-anchor="middle" dominant-baseline="central">SEP-1</text>
+      <text font-family="inherit" font-size="8" fill="#3B6D11" x="264" y="183" text-anchor="middle" dominant-baseline="central">Pod-A</text>
+      <rect x="302" y="156" width="56" height="36" rx="4" fill="#97C459" stroke="#3B6D11" stroke-width="0.3"/>
+      <text font-family="inherit" font-size="8" fill="#27500A" x="330" y="170" text-anchor="middle" dominant-baseline="central">SEP-2</text>
+      <text font-family="inherit" font-size="8" fill="#3B6D11" x="330" y="183" text-anchor="middle" dominant-baseline="central">Pod-B</text>
+      <rect x="368" y="156" width="56" height="36" rx="4" fill="#97C459" stroke="#3B6D11" stroke-width="0.3"/>
+      <text font-family="inherit" font-size="8" fill="#27500A" x="396" y="170" text-anchor="middle" dominant-baseline="central">SEP-3</text>
+      <text font-family="inherit" font-size="8" fill="#3B6D11" x="396" y="183" text-anchor="middle" dominant-baseline="central">Pod-C</text>
+      <text font-family="inherit" font-size="9" fill="#3B6D11" x="330" y="224" text-anchor="middle" dominant-baseline="central">DNAT: ClusterIP → Pod IP</text>
+      <text font-family="inherit" font-size="9" fill="#3B6D11" x="330" y="240" text-anchor="middle" dominant-baseline="central">확률 기반 로드밸런싱</text>
+    </g>
+    <g class="nb" onclick="tt('iptables vs IPVS 모드','iptables(기본): 규칙 수가 Service×Pod 수만큼 증가. Service 수천 개면 규칙 수만 개 → 성능 저하. IPVS(고성능): Linux 커널 레벨 L4 LB. 해시 테이블 기반으로 Service 수에 무관하게 O(1) 조회. 대규모 클러스터에서 IPVS 권장. RR, LC, WRR 등 다양한 알고리즘 지원.')">
+      <rect x="450" y="8" width="222" height="290" rx="8" fill="#EEEDFE" stroke="#534AB7" stroke-width="0.5"/>
+      <text font-family="inherit" font-size="10" font-weight="500" fill="#3C3489" x="561" y="26" text-anchor="middle" dominant-baseline="central">iptables vs IPVS</text>
+      <rect x="464" y="44" width="94" height="130" rx="6" fill="#CECBF6" stroke="#534AB7" stroke-width="0.3"/>
+      <text font-family="inherit" font-size="10" font-weight="500" fill="#3C3489" x="511" y="62" text-anchor="middle" dominant-baseline="central">iptables</text>
+      <text font-family="inherit" font-size="9" fill="#534AB7" x="511" y="80" text-anchor="middle" dominant-baseline="central">기본 모드</text>
+      <text font-family="inherit" font-size="9" fill="#534AB7" x="511" y="96" text-anchor="middle" dominant-baseline="central">규칙 선형 탐색</text>
+      <text font-family="inherit" font-size="9" fill="#534AB7" x="511" y="112" text-anchor="middle" dominant-baseline="central">Service 많으면</text>
+      <text font-family="inherit" font-size="9" fill="#534AB7" x="511" y="128" text-anchor="middle" dominant-baseline="central">성능 저하</text>
+      <text font-family="inherit" font-size="9" fill="#534AB7" x="511" y="144" text-anchor="middle" dominant-baseline="central">O(N) 탐색</text>
+      <rect x="572" y="44" width="86" height="130" rx="6" fill="#AFA9EC" stroke="#534AB7" stroke-width="0.3"/>
+      <text font-family="inherit" font-size="10" font-weight="500" fill="#3C3489" x="615" y="62" text-anchor="middle" dominant-baseline="central">IPVS</text>
+      <text font-family="inherit" font-size="9" fill="#3C3489" x="615" y="80" text-anchor="middle" dominant-baseline="central">고성능 모드</text>
+      <text font-family="inherit" font-size="9" fill="#3C3489" x="615" y="96" text-anchor="middle" dominant-baseline="central">해시 테이블</text>
+      <text font-family="inherit" font-size="9" fill="#3C3489" x="615" y="112" text-anchor="middle" dominant-baseline="central">O(1) 조회</text>
+      <text font-family="inherit" font-size="9" fill="#3C3489" x="615" y="128" text-anchor="middle" dominant-baseline="central">대규모 권장</text>
+      <text font-family="inherit" font-size="9" fill="#3C3489" x="615" y="144" text-anchor="middle" dominant-baseline="central">RR/LC/WRR</text>
+    </g>
+  </svg>
+  </div>
+
+  <!-- ── Panel 4: VPC CNI ── -->
+  <div class="panel" id="p4">
+  <svg viewBox="0 0 680 310" xmlns="http://www.w3.org/2000/svg">
+    <g class="nb" onclick="tt('aws-node (VPC CNI)','각 Node DaemonSet으로 실행. ENI를 Node에 추가로 붙이고 Secondary IP를 Pod에 할당. Pod가 실제 VPC IP 보유 → 오버레이 없이 VPC 라우팅으로 직접 통신. NodeGroup IAM Role에 EKS_CNI_Policy 필수.')">
+      <rect x="10" y="8" width="200" height="290" rx="8" fill="#E1F5EE" stroke="#0F6E56" stroke-width="0.5"/>
+      <text font-family="inherit" font-size="10" font-weight="500" fill="#085041" x="110" y="26" text-anchor="middle" dominant-baseline="central">aws-node (VPC CNI)</text>
+      <rect x="24" y="44" width="172" height="26" rx="4" fill="#9FE1CB" stroke="#0F6E56" stroke-width="0.3"/>
+      <text font-family="inherit" font-size="9" fill="#085041" x="110" y="57" text-anchor="middle" dominant-baseline="central">각 Node DaemonSet</text>
+      <rect x="24" y="76" width="172" height="26" rx="4" fill="#9FE1CB" stroke="#0F6E56" stroke-width="0.3"/>
+      <text font-family="inherit" font-size="9" fill="#085041" x="110" y="89" text-anchor="middle" dominant-baseline="central">ENI 추가 부착</text>
+      <rect x="24" y="108" width="172" height="26" rx="4" fill="#9FE1CB" stroke="#0F6E56" stroke-width="0.3"/>
+      <text font-family="inherit" font-size="9" fill="#085041" x="110" y="121" text-anchor="middle" dominant-baseline="central">Secondary IP → Pod 할당</text>
+      <rect x="24" y="140" width="172" height="26" rx="4" fill="#9FE1CB" stroke="#0F6E56" stroke-width="0.3"/>
+      <text font-family="inherit" font-size="9" fill="#085041" x="110" y="153" text-anchor="middle" dominant-baseline="central">Pod = 실제 VPC IP 보유</text>
+      <text font-family="inherit" font-size="9" fill="#0F6E56" x="110" y="196" text-anchor="middle" dominant-baseline="central">오버레이 없음</text>
+      <text font-family="inherit" font-size="9" fill="#0F6E56" x="110" y="212" text-anchor="middle" dominant-baseline="central">EKS_CNI_Policy 필수</text>
+      <text font-family="inherit" font-size="9" fill="#0F6E56" x="110" y="228" text-anchor="middle" dominant-baseline="central">SG for Pods 지원</text>
+    </g>
+    <g class="nb" onclick="tt('ENI + Secondary IP 구조','t3.medium 기준: ENI 최대 3개 × ENI당 IP 6개 - 1(Node 자신) = 최대 17 Pod. Primary ENI eth0: Node 자신 IP + Secondary IP들. Secondary ENI eth1: 추가 Secondary IP들. 각 Pod는 veth pair로 Node 네트워크와 연결.')">
+      <rect x="222" y="8" width="230" height="290" rx="8" fill="#FAEEDA" stroke="#854F0B" stroke-width="0.5"/>
+      <text font-family="inherit" font-size="10" font-weight="500" fill="#633806" x="337" y="26" text-anchor="middle" dominant-baseline="central">ENI + Secondary IP 구조</text>
+      <text font-family="inherit" font-size="9" fill="#854F0B" x="337" y="42" text-anchor="middle" dominant-baseline="central">t3.medium: 최대 Pod 17개</text>
+      <rect x="236" y="56" width="202" height="88" rx="6" fill="#FAC775" stroke="#854F0B" stroke-width="0.3"/>
+      <text font-family="inherit" font-size="9" font-weight="500" fill="#633806" x="337" y="74" text-anchor="middle" dominant-baseline="central">Primary ENI (eth0)</text>
+      <rect x="248" y="86" width="88" height="20" rx="3" fill="#EF9F27" stroke="#854F0B" stroke-width="0.3"/>
+      <text font-family="inherit" font-size="8" fill="#412402" x="292" y="96" text-anchor="middle" dominant-baseline="central">Node IP: 10.0.10.5</text>
+      <rect x="344" y="86" width="82" height="20" rx="3" fill="#EF9F27" stroke="#854F0B" stroke-width="0.3"/>
+      <text font-family="inherit" font-size="8" fill="#412402" x="385" y="96" text-anchor="middle" dominant-baseline="central">Pod: 10.0.10.11</text>
+      <rect x="248" y="110" width="82" height="20" rx="3" fill="#EF9F27" stroke="#854F0B" stroke-width="0.3"/>
+      <text font-family="inherit" font-size="8" fill="#412402" x="289" y="120" text-anchor="middle" dominant-baseline="central">Pod: 10.0.10.12</text>
+      <rect x="236" y="154" width="202" height="70" rx="6" fill="#FAC775" stroke="#854F0B" stroke-width="0.3"/>
+      <text font-family="inherit" font-size="9" font-weight="500" fill="#633806" x="337" y="172" text-anchor="middle" dominant-baseline="central">Secondary ENI (eth1)</text>
+      <rect x="248" y="184" width="82" height="20" rx="3" fill="#EF9F27" stroke="#854F0B" stroke-width="0.3"/>
+      <text font-family="inherit" font-size="8" fill="#412402" x="289" y="194" text-anchor="middle" dominant-baseline="central">Pod: 10.0.10.21</text>
+      <rect x="344" y="184" width="82" height="20" rx="3" fill="#EF9F27" stroke="#854F0B" stroke-width="0.3"/>
+      <text font-family="inherit" font-size="8" fill="#412402" x="385" y="194" text-anchor="middle" dominant-baseline="central">Pod: 10.0.10.22</text>
+      <text font-family="inherit" font-size="9" fill="#854F0B" x="337" y="252" text-anchor="middle" dominant-baseline="central">veth pair로 Node 연결</text>
+    </g>
+    <g class="nb" onclick="tt('Overlay vs VPC CNI 비교','Overlay: Pod IP = 192.168.x.x (VPC 모름) → VXLAN 캡슐화 필요 → CPU 오버헤드 + 2번 SNAT. VPC CNI: Pod IP = 실제 VPC IP → 캡슐화 없음 → 1번 SNAT만 발생 → 낮은 레이턴시. 단점: ENI/IP 수 제한으로 Node당 Pod 수 제한.')">
+      <rect x="464" y="8" width="208" height="290" rx="8" fill="#EEEDFE" stroke="#534AB7" stroke-width="0.5"/>
+      <text font-family="inherit" font-size="10" font-weight="500" fill="#3C3489" x="568" y="26" text-anchor="middle" dominant-baseline="central">Overlay vs VPC CNI</text>
+      <rect x="476" y="44" width="84" height="120" rx="6" fill="#CECBF6" stroke="#534AB7" stroke-width="0.3"/>
+      <text font-family="inherit" font-size="10" font-weight="500" fill="#3C3489" x="518" y="62" text-anchor="middle" dominant-baseline="central">Overlay</text>
+      <text font-family="inherit" font-size="9" fill="#534AB7" x="518" y="80" text-anchor="middle" dominant-baseline="central">192.168.x.x</text>
+      <text font-family="inherit" font-size="9" fill="#534AB7" x="518" y="96" text-anchor="middle" dominant-baseline="central">VXLAN 캡슐화</text>
+      <text font-family="inherit" font-size="9" fill="#534AB7" x="518" y="112" text-anchor="middle" dominant-baseline="central">CPU 오버헤드</text>
+      <text font-family="inherit" font-size="9" fill="#534AB7" x="518" y="128" text-anchor="middle" dominant-baseline="central">SNAT 2번</text>
+      <text font-family="inherit" font-size="9" fill="#534AB7" x="518" y="144" text-anchor="middle" dominant-baseline="central">Pod 수 무제한</text>
+      <rect x="572" y="44" width="88" height="120" rx="6" fill="#AFA9EC" stroke="#534AB7" stroke-width="0.3"/>
+      <text font-family="inherit" font-size="10" font-weight="500" fill="#3C3489" x="616" y="62" text-anchor="middle" dominant-baseline="central">VPC CNI</text>
+      <text font-family="inherit" font-size="9" fill="#3C3489" x="616" y="80" text-anchor="middle" dominant-baseline="central">10.0.x.x (VPC)</text>
+      <text font-family="inherit" font-size="9" fill="#3C3489" x="616" y="96" text-anchor="middle" dominant-baseline="central">캡슐화 없음</text>
+      <text font-family="inherit" font-size="9" fill="#3C3489" x="616" y="112" text-anchor="middle" dominant-baseline="central">낮은 레이턴시</text>
+      <text font-family="inherit" font-size="9" fill="#3C3489" x="616" y="128" text-anchor="middle" dominant-baseline="central">SNAT 1번</text>
+      <text font-family="inherit" font-size="9" fill="#3C3489" x="616" y="144" text-anchor="middle" dominant-baseline="central">ENI 수 제한</text>
+      <text font-family="inherit" font-size="9" fill="#534AB7" x="568" y="192" text-anchor="middle" dominant-baseline="central">SG for Pods</text>
+      <text font-family="inherit" font-size="9" fill="#534AB7" x="568" y="208" text-anchor="middle" dominant-baseline="central">(VPC CNI만 가능)</text>
+      <text font-family="inherit" font-size="9" fill="#534AB7" x="568" y="240" text-anchor="middle" dominant-baseline="central">EKS 기본 = VPC CNI</text>
+    </g>
+  </svg>
+  </div>
+
+  <!-- ── Panel 5: NetworkPolicy ── -->
+  <div class="panel" id="p5">
+  <svg viewBox="0 0 680 310" xmlns="http://www.w3.org/2000/svg">
+    <g class="nb" onclick="tt('NetworkPolicy 기본 동작','기본값: 모든 트래픽 허용. NetworkPolicy 적용 시 해당 Pod에 적용. 실무 패턴: default-deny-all 먼저 적용 → 필요한 것만 allow. ingress(수신)과 egress(송신) 각각 독립 설정. podSelector로 어느 Pod에 적용할지 지정.')">
+      <rect x="10" y="8" width="200" height="290" rx="8" fill="#FCEBEB" stroke="#A32D2D" stroke-width="0.5"/>
+      <text font-family="inherit" font-size="10" font-weight="500" fill="#791F1F" x="110" y="26" text-anchor="middle" dominant-baseline="central">NetworkPolicy 기본</text>
+      <rect x="24" y="44" width="172" height="26" rx="4" fill="#F7C1C1" stroke="#A32D2D" stroke-width="0.3"/>
+      <text font-family="inherit" font-size="9" fill="#791F1F" x="110" y="57" text-anchor="middle" dominant-baseline="central">기본: 모든 트래픽 허용</text>
+      <rect x="24" y="76" width="172" height="26" rx="4" fill="#F7C1C1" stroke="#A32D2D" stroke-width="0.3"/>
+      <text font-family="inherit" font-size="9" fill="#791F1F" x="110" y="89" text-anchor="middle" dominant-baseline="central">iptables / eBPF 기반</text>
+      <rect x="24" y="108" width="172" height="26" rx="4" fill="#F7C1C1" stroke="#A32D2D" stroke-width="0.3"/>
+      <text font-family="inherit" font-size="9" fill="#791F1F" x="110" y="121" text-anchor="middle" dominant-baseline="central">ingress + egress 독립 설정</text>
+      <rect x="24" y="140" width="172" height="26" rx="4" fill="#F7C1C1" stroke="#A32D2D" stroke-width="0.3"/>
+      <text font-family="inherit" font-size="9" fill="#791F1F" x="110" y="153" text-anchor="middle" dominant-baseline="central">podSelector로 대상 지정</text>
+      <text font-family="inherit" font-size="9" fill="#A32D2D" x="110" y="196" text-anchor="middle" dominant-baseline="central">실무 패턴:</text>
+      <text font-family="inherit" font-size="9" fill="#A32D2D" x="110" y="212" text-anchor="middle" dominant-baseline="central">default-deny-all 먼저</text>
+      <text font-family="inherit" font-size="9" fill="#A32D2D" x="110" y="228" text-anchor="middle" dominant-baseline="central">필요한 것만 allow</text>
+    </g>
+    <g class="nb" onclick="tt('default deny-all 패턴','podSelector: {} = 모든 Pod에 적용. policyTypes: [Ingress, Egress] = 인/아웃 모두 차단. 이후 필요한 트래픽만 개별 NetworkPolicy로 허용. 예: frontend → backend 허용, backend → DB 허용, 나머지 차단.')">
+      <rect x="222" y="8" width="216" height="290" rx="8" fill="#FAEEDA" stroke="#854F0B" stroke-width="0.5"/>
+      <text font-family="inherit" font-size="10" font-weight="500" fill="#633806" x="330" y="26" text-anchor="middle" dominant-baseline="central">default deny-all 패턴</text>
+      <rect x="236" y="44" width="188" height="136" rx="5" fill="#FAC775" stroke="#854F0B" stroke-width="0.3"/>
+      <text font-family="inherit" font-size="9" font-weight="500" fill="#633806" x="330" y="60" text-anchor="middle" dominant-baseline="central">deny-all.yaml</text>
+      <text font-family="inherit" font-size="8" fill="#854F0B" x="248" y="80" dominant-baseline="central">spec:</text>
+      <text font-family="inherit" font-size="8" fill="#854F0B" x="256" y="96" dominant-baseline="central">podSelector: {}</text>
+      <text font-family="inherit" font-size="8" fill="#854F0B" x="256" y="112" dominant-baseline="central">policyTypes:</text>
+      <text font-family="inherit" font-size="8" fill="#854F0B" x="264" y="128" dominant-baseline="central">- Ingress</text>
+      <text font-family="inherit" font-size="8" fill="#854F0B" x="264" y="144" dominant-baseline="central">- Egress</text>
+      <text font-family="inherit" font-size="8" fill="#854F0B" x="330" y="165" text-anchor="middle" dominant-baseline="central">모든 Pod 인/아웃 차단</text>
+      <text font-family="inherit" font-size="9" fill="#854F0B" x="330" y="210" text-anchor="middle" dominant-baseline="central">이후 개별 allow 규칙 추가</text>
+      <text font-family="inherit" font-size="9" fill="#854F0B" x="330" y="226" text-anchor="middle" dominant-baseline="central">frontend → backend</text>
+      <text font-family="inherit" font-size="9" fill="#854F0B" x="330" y="242" text-anchor="middle" dominant-baseline="central">backend → DB</text>
+    </g>
+    <g class="nb" onclick="tt('namespaceSelector + podSelector','다른 Namespace의 특정 Pod만 허용하는 패턴. namespaceSelector: NS 레이블로 특정 NS 선택. podSelector: Pod 레이블로 특정 Pod 선택. ipBlock: CIDR로 외부 IP 범위 허용(예: 0.0.0.0/0 = 모든 외부). VPC CNI 2023 버전부터 NetworkPolicy 기본 지원.')">
+      <rect x="450" y="8" width="222" height="290" rx="8" fill="#EEEDFE" stroke="#534AB7" stroke-width="0.5"/>
+      <text font-family="inherit" font-size="10" font-weight="500" fill="#3C3489" x="561" y="26" text-anchor="middle" dominant-baseline="central">세부 허용 규칙</text>
+      <rect x="464" y="44" width="194" height="130" rx="5" fill="#CECBF6" stroke="#534AB7" stroke-width="0.3"/>
+      <text font-family="inherit" font-size="9" font-weight="500" fill="#3C3489" x="561" y="62" text-anchor="middle" dominant-baseline="central">allow-frontend.yaml</text>
+      <text font-family="inherit" font-size="8" fill="#534AB7" x="476" y="80" dominant-baseline="central">spec:</text>
+      <text font-family="inherit" font-size="8" fill="#534AB7" x="484" y="96" dominant-baseline="central">podSelector:</text>
+      <text font-family="inherit" font-size="8" fill="#534AB7" x="492" y="112" dominant-baseline="central">app: backend</text>
+      <text font-family="inherit" font-size="8" fill="#534AB7" x="484" y="128" dominant-baseline="central">ingress:</text>
+      <text font-family="inherit" font-size="8" fill="#534AB7" x="492" y="144" dominant-baseline="central">podSelector:</text>
+      <text font-family="inherit" font-size="8" fill="#534AB7" x="500" y="160" dominant-baseline="central">app: frontend</text>
+      <text font-family="inherit" font-size="9" fill="#534AB7" x="561" y="198" text-anchor="middle" dominant-baseline="central">namespaceSelector</text>
+      <text font-family="inherit" font-size="9" fill="#534AB7" x="561" y="214" text-anchor="middle" dominant-baseline="central">다른 NS Pod 허용</text>
+      <text font-family="inherit" font-size="9" fill="#534AB7" x="561" y="240" text-anchor="middle" dominant-baseline="central">ipBlock: CIDR 범위</text>
+      <text font-family="inherit" font-size="9" fill="#534AB7" x="561" y="256" text-anchor="middle" dominant-baseline="central">외부 IP 허용/차단</text>
+    </g>
+  </svg>
+  </div>
+
+  <!-- ── Panel 6: Addon 전체 ── -->
+  <div class="panel" id="p6">
+  <svg viewBox="0 0 680 310" xmlns="http://www.w3.org/2000/svg">
+    <g class="nb" onclick="tt('vpc-cni (aws-node)','Pod에 VPC IP 직접 할당. ENI Secondary IP 관리. SG for Pods 지원. Terraform aws_eks_addon으로 관리. K8s 버전 업그레이드 시 함께 업그레이드 필요.')">
+      <rect x="10" y="8" width="150" height="88" rx="7" fill="#E1F5EE" stroke="#0F6E56" stroke-width="0.5"/>
+      <text font-family="inherit" font-size="10" font-weight="500" fill="#085041" x="85" y="28" text-anchor="middle" dominant-baseline="central">vpc-cni</text>
+      <text font-family="inherit" font-size="9" fill="#0F6E56" x="85" y="46" text-anchor="middle" dominant-baseline="central">Pod VPC IP 할당</text>
+      <text font-family="inherit" font-size="9" fill="#0F6E56" x="85" y="62" text-anchor="middle" dominant-baseline="central">ENI 관리</text>
+      <text font-family="inherit" font-size="9" fill="#0F6E56" x="85" y="78" text-anchor="middle" dominant-baseline="central">DaemonSet</text>
+    </g>
+    <g class="nb" onclick="tt('coredns','K8s 내부 DNS. Service 이름 → ClusterIP 변환. 외부 DNS는 Route53으로 포워딩. Deployment로 배포(보통 2개 replica). Terraform aws_eks_addon 관리.')">
+      <rect x="172" y="8" width="150" height="88" rx="7" fill="#E1F5EE" stroke="#0F6E56" stroke-width="0.5"/>
+      <text font-family="inherit" font-size="10" font-weight="500" fill="#085041" x="247" y="28" text-anchor="middle" dominant-baseline="central">coredns</text>
+      <text font-family="inherit" font-size="9" fill="#0F6E56" x="247" y="46" text-anchor="middle" dominant-baseline="central">K8s 내부 DNS</text>
+      <text font-family="inherit" font-size="9" fill="#0F6E56" x="247" y="62" text-anchor="middle" dominant-baseline="central">이름 → ClusterIP</text>
+      <text font-family="inherit" font-size="9" fill="#0F6E56" x="247" y="78" text-anchor="middle" dominant-baseline="central">Deployment</text>
+    </g>
+    <g class="nb" onclick="tt('kube-proxy','Service ClusterIP → Pod IP DNAT. iptables/IPVS 규칙 관리. 각 Node DaemonSet 실행. Terraform aws_eks_addon 관리.')">
+      <rect x="334" y="8" width="150" height="88" rx="7" fill="#E1F5EE" stroke="#0F6E56" stroke-width="0.5"/>
+      <text font-family="inherit" font-size="10" font-weight="500" fill="#085041" x="409" y="28" text-anchor="middle" dominant-baseline="central">kube-proxy</text>
+      <text font-family="inherit" font-size="9" fill="#0F6E56" x="409" y="46" text-anchor="middle" dominant-baseline="central">ClusterIP DNAT</text>
+      <text font-family="inherit" font-size="9" fill="#0F6E56" x="409" y="62" text-anchor="middle" dominant-baseline="central">iptables/IPVS</text>
+      <text font-family="inherit" font-size="9" fill="#0F6E56" x="409" y="78" text-anchor="middle" dominant-baseline="central">DaemonSet</text>
+    </g>
+    <g class="nb" onclick="tt('aws-ebs-csi-driver','EBS 볼륨을 K8s PersistentVolume으로 사용. StorageClass, PVC 지원. Terraform aws_eks_addon 관리. IRSA로 IAM 권한 부여 필요.')">
+      <rect x="496" y="8" width="176" height="88" rx="7" fill="#E1F5EE" stroke="#0F6E56" stroke-width="0.5"/>
+      <text font-family="inherit" font-size="10" font-weight="500" fill="#085041" x="584" y="28" text-anchor="middle" dominant-baseline="central">aws-ebs-csi-driver</text>
+      <text font-family="inherit" font-size="9" fill="#0F6E56" x="584" y="46" text-anchor="middle" dominant-baseline="central">EBS → PersistentVolume</text>
+      <text font-family="inherit" font-size="9" fill="#0F6E56" x="584" y="62" text-anchor="middle" dominant-baseline="central">StorageClass/PVC</text>
+      <text font-family="inherit" font-size="9" fill="#0F6E56" x="584" y="78" text-anchor="middle" dominant-baseline="central">IRSA 필요</text>
+    </g>
+    <text font-family="inherit" font-size="9" fill="#888780" x="340" y="112" text-anchor="middle" dominant-baseline="central">── Terraform aws_eks_addon 관리 (클러스터 생명주기 종속) ──</text>
+    <text font-family="inherit" font-size="9" fill="#888780" x="340" y="204" text-anchor="middle" dominant-baseline="central">── ArgoCD / Helm 관리 (앱 레이어, 설치/업데이트 잦음) ──</text>
+    <g class="nb" onclick="tt('aws-load-balancer-controller','Ingress → ALB, Service type=LoadBalancer → NLB 자동 생성. IRSA로 IAM 권한 필요. ArgoCD/Helm으로 관리 권장.')">
+      <rect x="10" y="120" width="190" height="76" rx="7" fill="#FAEEDA" stroke="#854F0B" stroke-width="0.5"/>
+      <text font-family="inherit" font-size="10" font-weight="500" fill="#633806" x="105" y="140" text-anchor="middle" dominant-baseline="central">aws-load-balancer-controller</text>
+      <text font-family="inherit" font-size="9" fill="#854F0B" x="105" y="158" text-anchor="middle" dominant-baseline="central">Ingress → ALB</text>
+      <text font-family="inherit" font-size="9" fill="#854F0B" x="105" y="174" text-anchor="middle" dominant-baseline="central">Service → NLB</text>
+    </g>
+    <g class="nb" onclick="tt('cluster-autoscaler','Node 수 자동 조절. Pod Pending 상태 감지 → Node 추가. 유휴 Node → 삭제. NodeGroup min/max 범위 내에서 동작. Karpenter로 대체 트렌드.')">
+      <rect x="212" y="120" width="148" height="76" rx="7" fill="#FAEEDA" stroke="#854F0B" stroke-width="0.5"/>
+      <text font-family="inherit" font-size="10" font-weight="500" fill="#633806" x="286" y="140" text-anchor="middle" dominant-baseline="central">cluster-autoscaler</text>
+      <text font-family="inherit" font-size="9" fill="#854F0B" x="286" y="158" text-anchor="middle" dominant-baseline="central">Node 수 자동 조절</text>
+      <text font-family="inherit" font-size="9" fill="#854F0B" x="286" y="174" text-anchor="middle" dominant-baseline="central">min/max 범위 내</text>
+    </g>
+    <g class="nb" onclick="tt('metrics-server','kubelet에서 CPU/메모리 수집 → Metrics API 제공. kubectl top nodes/pods 가능. HPA(Horizontal Pod Autoscaler)의 기반. ArgoCD/Helm으로 관리 권장.')">
+      <rect x="372" y="120" width="148" height="76" rx="7" fill="#FAEEDA" stroke="#854F0B" stroke-width="0.5"/>
+      <text font-family="inherit" font-size="10" font-weight="500" fill="#633806" x="446" y="140" text-anchor="middle" dominant-baseline="central">metrics-server</text>
+      <text font-family="inherit" font-size="9" fill="#854F0B" x="446" y="158" text-anchor="middle" dominant-baseline="central">CPU/메모리 수집</text>
+      <text font-family="inherit" font-size="9" fill="#854F0B" x="446" y="174" text-anchor="middle" dominant-baseline="central">kubectl top 지원</text>
+    </g>
+    <g class="nb" onclick="tt('prometheus + grafana','메트릭 수집(prometheus) + 시각화(grafana). kube-state-metrics, node-exporter와 함께 사용. ArgoCD로 관리. Addon 중 가장 설정이 복잡하고 업데이트가 잦음.')">
+      <rect x="532" y="120" width="140" height="76" rx="7" fill="#FAEEDA" stroke="#854F0B" stroke-width="0.5"/>
+      <text font-family="inherit" font-size="10" font-weight="500" fill="#633806" x="602" y="140" text-anchor="middle" dominant-baseline="central">prometheus + grafana</text>
+      <text font-family="inherit" font-size="9" fill="#854F0B" x="602" y="158" text-anchor="middle" dominant-baseline="central">메트릭 수집</text>
+      <text font-family="inherit" font-size="9" fill="#854F0B" x="602" y="174" text-anchor="middle" dominant-baseline="central">대시보드 시각화</text>
+    </g>
+    <g class="nb" onclick="tt('ArgoCD','GitOps 도구. Addon 자동 배포/업데이트. 드리프트 감지+자동 복구. 앱 레이어 Addon은 ArgoCD로 관리하는 게 실무 표준.')">
+      <rect x="10" y="212" width="148" height="76" rx="7" fill="#EEEDFE" stroke="#534AB7" stroke-width="0.5"/>
+      <text font-family="inherit" font-size="10" font-weight="500" fill="#3C3489" x="84" y="232" text-anchor="middle" dominant-baseline="central">ArgoCD</text>
+      <text font-family="inherit" font-size="9" fill="#534AB7" x="84" y="250" text-anchor="middle" dominant-baseline="central">GitOps 자동 배포</text>
+      <text font-family="inherit" font-size="9" fill="#534AB7" x="84" y="266" text-anchor="middle" dominant-baseline="central">드리프트 감지</text>
+    </g>
+    <g class="nb" onclick="tt('cert-manager','TLS 인증서 자동 발급/갱신. Let\'s Encrypt 연동. Ingress에 HTTPS 자동 적용. ArgoCD/Helm으로 관리.')">
+      <rect x="170" y="212" width="148" height="76" rx="7" fill="#EEEDFE" stroke="#534AB7" stroke-width="0.5"/>
+      <text font-family="inherit" font-size="10" font-weight="500" fill="#3C3489" x="244" y="232" text-anchor="middle" dominant-baseline="central">cert-manager</text>
+      <text font-family="inherit" font-size="9" fill="#534AB7" x="244" y="250" text-anchor="middle" dominant-baseline="central">TLS 인증서 자동화</text>
+      <text font-family="inherit" font-size="9" fill="#534AB7" x="244" y="266" text-anchor="middle" dominant-baseline="central">Let's Encrypt 연동</text>
+    </g>
+    <g class="nb" onclick="tt('external-dns','Route53 레코드 자동 관리. Ingress/Service 생성 시 DNS 레코드 자동 등록. IRSA로 Route53 권한 필요.')">
+      <rect x="330" y="212" width="148" height="76" rx="7" fill="#EEEDFE" stroke="#534AB7" stroke-width="0.5"/>
+      <text font-family="inherit" font-size="10" font-weight="500" fill="#3C3489" x="404" y="232" text-anchor="middle" dominant-baseline="central">external-dns</text>
+      <text font-family="inherit" font-size="9" fill="#534AB7" x="404" y="250" text-anchor="middle" dominant-baseline="central">Route53 자동 관리</text>
+      <text font-family="inherit" font-size="9" fill="#534AB7" x="404" y="266" text-anchor="middle" dominant-baseline="central">DNS 자동 등록</text>
+    </g>
+    <g class="nb" onclick="tt('Karpenter','cluster-autoscaler의 차세대. Pod 요구사항에 맞는 최적 인스턴스 타입 자동 선택. Spot + On-Demand 혼합 운영. AWS 권장 방향.')">
+      <rect x="490" y="212" width="182" height="76" rx="7" fill="#EEEDFE" stroke="#534AB7" stroke-width="0.5"/>
+      <text font-family="inherit" font-size="10" font-weight="500" fill="#3C3489" x="581" y="232" text-anchor="middle" dominant-baseline="central">Karpenter</text>
+      <text font-family="inherit" font-size="9" fill="#534AB7" x="581" y="250" text-anchor="middle" dominant-baseline="central">차세대 Node 자동 확장</text>
+      <text font-family="inherit" font-size="9" fill="#534AB7" x="581" y="266" text-anchor="middle" dominant-baseline="central">최적 인스턴스 자동 선택</text>
+    </g>
+  </svg>
+  </div>
+
+  <div id="tt-box" class="tip">각 박스를 클릭하면 상세 설명이 표시됩니다.</div>
+
+  <script>
+    function sw(i, btn) {
+      document.querySelectorAll('.tb button').forEach(b => b.classList.remove('on'));
+      document.querySelectorAll('.panel').forEach(p => p.classList.remove('on'));
+      btn.classList.add('on');
+      document.getElementById('p' + i).classList.add('on');
+      document.getElementById('tt-box').innerHTML = '각 박스를 클릭하면 상세 설명이 표시됩니다.';
+    }
+    function tt(title, desc) {
+      document.getElementById('tt-box').innerHTML = '<strong>' + title + '</strong> — ' + desc;
+    }
+  </script>
+</body>
+</html>
