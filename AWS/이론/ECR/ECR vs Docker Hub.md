@@ -41,7 +41,7 @@ Docker Hub → EKS
   - imagePullSecrets 설정 필요
   - K8s Secret에 Docker 로그인 정보 저장
   - 인터넷을 거쳐서 pull (NAT GW 통과)
-  - Rate Limit 있음 (익명: 100회/6시간) -> 횟수 제안에 대한 대책 조사!!!!!!!!!!
+  - Rate Limit 있음 (익명: 100회/6시간)
 
 ECR → EKS
   - NodeGroup IAM Role에 ECRReadOnly 정책만 있으면 됨
@@ -181,10 +181,3 @@ Pod 실행
 >
 > Week4 수준에서는 Docker Hub에서 베이스 이미지를 받고 ECR에 앱 이미지를 올리는 패턴이 가장 일반적이고 충분합니다. ✅
 
----
-
-[https://zotregistry.dev/v2.1.15/](https://zotregistry.dev/v2.1.15/)
-
-[https://zotregistry.dev/v2.1.15/](https://zotregistry.dev/v2.1.15/)
-
-docker hub - pull 속도가 사용 정도에 따라 느려질 수 있음
