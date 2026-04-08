@@ -31,7 +31,7 @@ Pod → ServiceAccount → IAM Role → AWS
 
 즉,
 
-- Pod가 특정 ServiceAccount 사용
+- Pod가 특정 [[ServiceAccount]] 사용
     
 - ServiceAccount에 IAM Role 연결
     
@@ -110,13 +110,3 @@ EKS OIDC Provider 등록
 - OIDC Provider 필요
     
 
-필요하면
-
-- IRSA 구성 단계
-    
-- Terraform 코드 예시
-    
-- Helm에서 연결 방법
-    
-
-중에서 하나 바로 설명해 줄게.

@@ -1,3 +1,70 @@
+두 방식의 핵심 차이를 다이어그램과 함께 설명해 드릴게요.## 핵심 차이점
+![[Pasted image 20260407182015.png]]
+### 1. L7 처리 위치
+
+- **NGINX 방식**: 클러스터 내부의 NGINX Pod가 L7 라우팅 담당. NLB는 단순히 TCP 트래픽만 전달
+- **ALB 방식**: AWS ALB가 직접 L7 라우팅 처리. 경로 기반, 호스트 기반 라우팅을 AWS 인프라에서 수행
+
+### 2. 네트워크 홉 수
+
+- **NGINX 방식**: 인터넷 → NLB → NGINX → Service → Pod (4홉)
+- **ALB 방식**: 인터넷 → ALB → Pod (2홉, IP 타입 타겟 그룹 사용 시)
+
+### 3. 운영 관점
+
+|항목|NGINX|ALB Controller|
+|---|---|---|
+|**관리 주체**|사용자가 NGINX Pod 운영|AWS가 ALB 관리|
+|**스케일링**|NGINX HPA 직접 설정|AWS 자동 스케일링|
+|**SSL 종료**|NGINX에서 처리|ALB에서 처리 (ACM 연동)|
+|**커스터마이징**|자유로움 (nginx.conf)|AWS 기능 범위 내|
+|**비용**|EC2 + NLB 비용|ALB 시간당 + LCU 비용|
+
+### 4. 언제 어떤 걸 선택?
+
+- **NGINX**: 복잡한 라우팅 규칙, 커스텀 헤더 조작, 레이트 리미팅 등 세밀한 제어 필요할 때
+- **ALB**: AWS 서비스 통합(WAF, Cognito), 운영 부담 최소화, 간단한 라우팅 규칙일 때
+
+> [!info] ALB Controller 동작 원리
+> 
+> ## 핵심 개념
+> 
+> **selector는 ALB가 아니라 Service에 정의**되어 있고, ALB Controller가 그걸 참조한다.
+> 
+> ![[Pasted image 20260407183728.png]]
+> 
+> ## 동작 흐름
+> 
+> ```
+> ① Ingress: "api-service로 보내줘"
+>      ↓
+> ② Service: "app: api 라벨 가진 Pod들이 내 대상이야" (selector 정의)
+>      ↓
+> ③ ALB Controller: Service의 selector로 Pod 목록 조회 → Pod IP 추출
+>      ↓
+> ④ AWS Target Group: Pod IP들 등록 (10.0.1.15, 10.0.2.23...)
+>      ↓
+> ⑤ ALB: Target Group 보고 Pod IP로 직접 트래픽 전달
+> ```
+> 
+> ## 각 컴포넌트 역할
+> 
+> | 컴포넌트 | 역할 |
+> |----------|------|
+> | **ALB** | Target Group에 등록된 IP로 트래픽 전달 (selector 모름) |
+> | **ALB Controller** | K8s 리소스 감시 → AWS Target Group 동기화 (중간 번역기) |
+> | **Service** | 트래픽 경로 아님, Pod 목록 정보 제공용 |
+> 
+> ## Pod 스케일 아웃 시
+> 
+> 1. 새 Pod 생성 (label: `app: api`)
+> 2. Service의 Endpoints에 자동 추가
+> 3. ALB Controller가 감지
+> 4. Target Group에 새 Pod IP 등록
+> 5. ALB가 새 Pod로도 트래픽 분산
+
+---
+
 ## 한 줄 정의
 
 ```
@@ -10,62 +77,25 @@ NLB (Network Load Balancer)
 
 ---
 
-## OSI 계층 차이
-
-```
-ALB → L7 (애플리케이션 계층)
-      HTTP 헤더, URL 경로, 호스트명을 봄
-
-NLB → L4 (전송 계층)
-      IP 주소, 포트, 프로토콜만 봄
-```
-
----
-
-## 라우팅 방식 차이
-
-**ALB**
-
-```
-/api/*      → API 서버 Pod
-/admin/*    → Admin 서버 Pod
-/static/*   → 정적 파일 서버 Pod
-
-host: api.example.com   → API 클러스터
-host: admin.example.com → Admin 클러스터
-```
-
-**NLB**
-
-```
-포트 3306 → DB 서버
-포트 6379 → Redis 서버
-포트 8080 → 앱 서버
-
-내용은 전혀 안 봄, 포트만 보고 전달
-```
-
----
-
-## 핵심 차이 비교
-
-```
-                ALB             NLB
-계층            L7              L4
-프로토콜        HTTP/HTTPS      TCP/UDP/TLS
-라우팅 기준     URL/헤더/호스트  IP/포트
-속도            상대적으로 느림  매우 빠름
-고정 IP         없음            있음 (EIP 할당)
-WebSocket       지원            지원
-gRPC            지원            지원
-TLS 종료        ALB에서 처리    NLB 또는 Pod에서 처리
-클라이언트 IP   X-Forwarded-For 원본 IP 그대로
-가격            비교적 비쌈     비교적 저렴
-```
-
----
-
 ## 언제 뭘 쓰나
+
+- **NGINX**: 복잡한 라우팅 규칙, 커스텀 헤더 조작, 레이트 리미팅 등 세밀한 제어 필요할 때
+- **ALB**: AWS 서비스 통합(WAF, Cognito), 운영 부담 최소화, 간단한 라우팅 규칙일 때
+  
+> - AWS 서비스 통합: ALB는 AWS 네이티브 서비스라서 **다른 AWS 서비스들과 클릭 몇 번으로 연결**됩니다.
+> - 운영 부담이 줄어드는 이유는 아래 표와 같다.
+
+|항목|NGINX 방식|ALB 방식|
+|---|---|---|
+|**스케일링**|HPA 설정, 리소스 튜닝, Pod 수 관리|AWS가 자동으로 처리 (신경 쓸 것 없음)|
+|**고가용성**|여러 AZ에 NGINX Pod 분산 배치 직접 설계|기본 내장 (Multi-AZ)|
+|**SSL 인증서**|인증서 발급, 갱신, 시크릿 관리|ACM에서 자동 발급/갱신|
+|**보안 패치**|NGINX 버전 업데이트 직접|AWS가 알아서 패치|
+|**모니터링**|Prometheus, Grafana 등 직접 구축|CloudWatch 기본 연동|
+|**로그**|로그 수집 파이프라인 구축|S3로 자동 저장 옵션|
+|**장애 대응**|NGINX Pod 죽으면 직접 트러블슈팅|AWS 책임 (SLA 보장)|
+
+---
 
 **ALB를 쓰는 경우**
 
