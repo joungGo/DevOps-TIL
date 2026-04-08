@@ -19,8 +19,7 @@ AWS → "너 진짜 이 클러스터 Pod 맞아?"
 
 ```text
 Pod
- → ServiceAccount 토큰 생성
- → OIDC 토큰 전달
+ → ServiceAccount 토큰(= OIDC 토큰 전달) 생성
  → AWS가 OIDC Provider로 검증
  → IAM Role 허용
 ```
