@@ -38,6 +38,8 @@ Pod → ServiceAccount → IAM Role → AWS
 - 그 Role 권한으로 AWS 접근
     
 
+올바른 정의: [[2. ServiceAccount와 IAM Role의 정의 & 관계]]
+
 ---
 
 ## 예시
