@@ -126,6 +126,24 @@ AWS 의존성이 낮다.
 
 에서도 유사하게 구성 가능하다.
 
+> [!info] ingress-nginx가 Kubernetes Native 구조인 이유
+> `ingress-nginx`는 Kubernetes 안에서 동작하는 일반적인 Ingress Controller이기 때문에, 특정 클라우드 서비스에 강하게 묶이지 않습니다.
+>
+> - `온프레미스`, `Minikube`, `K3s`, 다른 Cloud`에서도 유사한 방식으로 구성 가능
+> - Ingress, Service, Secret, cert-manager 같은 Kubernetes 표준 리소스 중심으로 동작
+> - 멀티클라우드나 환경 이전 시 구조를 크게 바꾸지 않아도 됨
+>
+> 즉, `ingress-nginx`는 **Kubernetes 자체의 표준 구조에 더 가깝다**는 장점이 있습니다.
+
+> [!info] ALB와 비교하면
+> `ALB` 기반 구조는 AWS 환경에서는 매우 편리하지만, AWS 서비스에 대한 의존성이 높습니다.
+>
+> - `AWS Load Balancer Controller`가 필요함
+> - `ACM`, `WAF`, `ALB annotation`, `Target Group` 같은 AWS 개념에 의존
+> - 같은 구조를 온프레미스나 다른 클라우드로 그대로 옮기기 어려움
+>
+> 즉, ALB는 **AWS에서는 강력하고 편리하지만 이식성은 낮고**, ingress-nginx는 **클라우드가 바뀌어도 구조를 유지하기 쉽다**는 차이가 있습니다.
+
 ---
 
 #### 3. 구조가 단순함
@@ -151,6 +169,17 @@ ingress-nginx가 직접 인증서를 관리해야 한다.
 
 등을 사용해야 한다.
 
+> [!info] ALB에서 TLS 인증서 관리가 쉬운 이유
+> ALB는 HTTPS를 직접 종료할 수 있어서, 인증서를 `ingress-nginx`나 Pod가 직접 들고 있을 필요가 없습니다.
+> 
+> - 인증서는 `AWS ACM`에 저장
+> - Ingress에서는 `certificate-arn`만 참조
+> - `cert-manager`, `Let's Encrypt`, `Kubernetes Secret`로 인증서 파일을 직접 관리할 필요가 적음
+> - 갱신도 ACM이 관리
+> 
+> 즉, ALB는 **인증서 파일 관리 책임을 Kubernetes 밖의 AWS가 대신 가져가는 구조**입니다.
+
+
 ---
 
 ### 2. AWS WAF 연동이 어려움
@@ -165,6 +194,15 @@ AWS WAF는 일반적으로:
 에 연결한다.
 
 따라서 NLB 구조에서는 WAF 연동이 상대적으로 어렵다.
+
+> [!info] ALB에서 WAF 연동이 쉬운 이유
+> AWS WAF는 원래 `ALB`, `CloudFront`, `API Gateway` 같은 AWS의 L7 서비스에 붙도록 설계되어 있습니다.
+> 
+> - ALB는 L7 Load Balancer
+> - WAF Web ACL을 ALB에 바로 연결 가능
+> - IP 차단, SQL Injection 방어, XSS 방어, Rate-based rule 등을 ALB 앞단에서 처리 가능
+> 
+> 즉, ALB는 **WAF가 기대하는 검사 지점 자체**이기 때문에 연동이 자연스럽고 운영도 단순합니다.
 
 ---
 
